@@ -18,175 +18,198 @@
         .modal-active { opacity: 1; pointer-events: auto; transition: opacity 0.3s ease; }
         .modal-hidden { opacity: 0; pointer-events: none; transition: opacity 0.3s ease; }
         *, *::before, *::after { transition: background-color 0.3s ease, border-color 0.3s ease, color 0.3s ease, box-shadow 0.3s ease; }
-        .decor-line { height: 1px; background: linear-gradient(90deg, transparent, rgba(255,255,255,0.1), transparent); margin: 1rem 0; }
-        .glass-panel { background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(255, 255, 255, 0.05); backdrop-filter: blur(10px); }
+        .decor-line { background: linear-gradient(90deg, transparent, #ef4444, transparent); }
     </style>
 </head>
-<body class="bg-slate-100 text-slate-900 dark:bg-slate-950 dark:text-white min-h-screen flex items-center justify-center p-4 select-none relative overflow-x-hidden">
+<body class="bg-slate-50 dark:bg-slate-950 text-slate-800 dark:text-slate-100 font-sans min-h-screen flex flex-col justify-between antialiased">
 
-    <button onclick="toggleTheme()" class="absolute top-4 right-4 p-3 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-md active:scale-95 z-40">
-        <svg id="theme-sun" class="w-6 h-6 text-amber-500 hidden dark:block" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364-6.364l-.707.707M6.343 17.657l-.707.707m12.728 0l-.707-.707M6.343 6.343l-.707-.707M12 8a4 4 0 100 8 4 4 0 000-8z"/></svg>
-        <svg id="theme-moon" class="w-6 h-6 text-slate-700 block dark:hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"/></svg>
-    </button>
-
-    <div id="mode-selection-screen" class="w-full max-w-sm bg-white/90 dark:bg-slate-900/90 backdrop-blur-md p-6 rounded-2xl shadow-xl border border-slate-200 dark:border-slate-800 space-y-6 z-10 text-center">
-        <div>
-            <h1 class="text-4xl font-black tracking-wider text-transparent bg-clip-text bg-gradient-to-r from-red-500 to-orange-500">ШПИОН</h1>
-            <p class="text-xs text-slate-500 uppercase tracking-widest mt-1 font-bold">Выберите режим игры</p>
-        </div>
-        <div class="space-y-3">
-            <button onclick="switchMode('offline')" class="w-full py-4 bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white font-black rounded-xl shadow-md active:scale-95 transition flex flex-col items-center justify-center">
-                <span>📱 Оффлайн режим</span>
-                <span class="text-[10px] font-normal opacity-80 mt-0.5">Играем на одном телефоне</span>
-            </button>
-            <button onclick="switchMode('online')" class="w-full py-4 bg-gradient-to-r from-red-500 to-orange-600 hover:from-red-600 hover:to-orange-700 text-white font-black rounded-xl shadow-md active:scale-95 transition flex flex-col items-center justify-center">
-                <span>🌐 Онлайн режим</span>
-                <span class="text-[10px] font-normal opacity-80 mt-0.5">Каждый со своего смартфона</span>
-            </button>
-        </div>
+    <div class="absolute top-4 right-4 z-50">
+        <button onclick="toggleTheme()" class="p-2.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl shadow-md text-sm active:scale-95 transition">🌓</button>
     </div>
 
-    <div id="setup-screen-offline" class="hidden w-full max-w-sm bg-white/90 dark:bg-slate-900/90 backdrop-blur-md p-6 rounded-2xl shadow-xl border border-slate-200 dark:border-slate-800 space-y-4 z-10">
-        <button onclick="backToMainMenu()" class="text-xs font-bold text-slate-400 hover:text-slate-600 dark:hover:text-white transition">⬅️ Назад в меню</button>
-        <div class="text-center">
-            <h1 class="text-2xl font-black text-slate-800 dark:text-white">Настройки Оффлайн</h1>
-        </div>
-        <div class="space-y-3">
-            <div>
-                <div class="flex justify-between text-sm font-medium mb-1"><span class="text-slate-600 dark:text-slate-400">Игроки:</span><span id="player-count-val-off" class="font-bold text-red-500">4</span></div>
-                <input id="player-count-off" type="range" min="3" max="12" value="4" oninput="document.getElementById('player-count-val-off').innerText=this.value" class="w-full h-2 bg-slate-200 dark:bg-slate-800 rounded-lg appearance-none cursor-pointer accent-red-500">
+    <main class="flex-1 flex items-center justify-center p-4">
+        
+        <div id="mode-selection-screen" class="w-full max-w-sm bg-white dark:bg-slate-900 p-6 rounded-2xl shadow-xl border border-slate-200 dark:border-slate-800 text-center space-y-6">
+            <div class="space-y-2">
+                <div class="inline-flex p-3 bg-red-500/10 text-red-500 rounded-2xl font-black text-2xl tracking-wider uppercase border border-red-500/20 shadow-inner">🕵️‍♂️ SPYFALL</div>
+                <h1 class="text-2xl font-black tracking-tight mt-2 bg-gradient-to-r from-slate-900 to-slate-700 dark:from-white dark:to-slate-400 bg-clip-text text-transparent">Выбор режима игры</h1>
+                <p class="text-xs text-slate-400 font-medium">Выберите формат проведения сессии</p>
             </div>
-            <button onclick="startOfflineGame()" class="w-full py-3.5 bg-gradient-to-r from-blue-500 to-indigo-600 text-white rounded-xl font-black shadow-md active:scale-95 transition">Поехали 🚀</button>
-        </div>
-    </div>
-
-    <div id="setup-screen-online" class="hidden w-full max-w-sm bg-white/90 dark:bg-slate-900/90 backdrop-blur-md p-6 rounded-2xl shadow-xl border border-slate-200 dark:border-slate-800 space-y-5 z-10">
-        <button onclick="backToMainMenu()" class="text-xs font-bold text-slate-400 hover:text-slate-600 dark:hover:text-white transition">⬅️ Назад в меню</button>
-        <div class="text-center">
-            <h1 class="text-2xl font-black text-slate-800 dark:text-white">Сетевой Онлайн</h1>
-        </div>
-        <div class="space-y-4">
-            <div>
-                <label class="block text-sm font-medium text-slate-600 dark:text-slate-400 mb-1">Твой никнейм:</label>
-                <input id="online-nickname" type="text" placeholder="Введите имя..." maxlength="15" class="w-full bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-xl p-3 text-slate-900 dark:text-white font-bold focus:outline-none focus:border-red-500">
-            </div>
-            <div class="p-3 bg-slate-100 dark:bg-slate-800/40 rounded-xl border border-slate-200 dark:border-slate-800/60">
-                <button id="btn-create-lobby" onclick="createLobby()" class="w-full py-3.5 bg-gradient-to-r from-red-500 to-orange-500 text-white font-bold rounded-xl transition-all active:scale-95 shadow-md">
-                    ➕ Создать новую комнату
+            <div class="decor-line h-[1px] w-full"></div>
+            <div class="space-y-3">
+                <button onclick="switchMode('offline')" class="w-full py-4 px-5 bg-gradient-to-r from-slate-900 to-slate-800 hover:from-black hover:to-slate-900 dark:from-white dark:to-slate-100 dark:hover:from-slate-100 dark:hover:to-slate-200 text-white dark:text-slate-950 font-black rounded-xl shadow-lg transition duration-200 active:scale-[0.98] flex items-center justify-between text-sm group uppercase tracking-wider">
+                    <span>📱 На одном устройстве</span>
+                    <span class="group-hover:translate-x-1 transition duration-200">→</span>
+                </button>
+                <button onclick="switchMode('online')" class="w-full py-4 px-5 bg-gradient-to-r from-red-500 to-orange-500 hover:from-red-600 hover:to-orange-600 text-white font-black rounded-xl shadow-lg shadow-red-500/20 hover:shadow-red-500/30 transition duration-200 active:scale-[0.98] flex items-center justify-between text-sm group uppercase tracking-wider">
+                    <span>🌐 Онлайн по сети (Бета)</span>
+                    <span class="group-hover:translate-x-1 transition duration-200">→</span>
                 </button>
             </div>
-            <div class="p-3 bg-slate-100 dark:bg-slate-800/40 rounded-xl border border-slate-200 dark:border-slate-800/60 space-y-2">
-                <label class="block text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Или войти к другу:</label>
-                <div class="flex space-x-2">
-                    <input id="online-code-input" type="text" placeholder="КОД" maxlength="5" oninput="this.value = this.value.toUpperCase();" class="w-1/2 bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-xl p-3 text-center text-slate-900 dark:text-white font-black tracking-widest focus:outline-none focus:border-red-500">
-                    <button id="btn-join-lobby" onclick="joinLobby()" class="w-1/2 py-3 bg-gradient-to-r from-blue-500 to-indigo-600 text-white font-bold rounded-xl transition-all text-sm active:scale-95 shadow-md">
-                        🚪 Войти по коду
-                    </button>
-                </div>
-            </div>
         </div>
-    </div>
 
-    <div id="online-lobby-screen" class="hidden w-full max-w-sm bg-white/90 dark:bg-slate-900/90 backdrop-blur-md p-6 rounded-2xl shadow-xl border border-slate-200 dark:border-slate-800 space-y-5 z-10">
-        <div class="text-center border-b border-slate-200 dark:border-slate-800 pb-3">
-            <p class="text-xs text-slate-500 dark:text-slate-400 uppercase tracking-widest font-semibold">Код твоей комнаты</p>
-            <div onclick="copyCode()" class="inline-flex items-center space-x-2 cursor-pointer bg-slate-100 dark:bg-slate-800/60 hover:bg-slate-200 px-4 py-1.5 rounded-xl mt-1.5 select-all active:scale-95 transition">
-                <h2 id="lobby-code-display" class="text-4xl font-black tracking-widest text-red-500 font-mono">XXXXX</h2>
+        <div id="setup-screen-offline" class="hidden w-full max-w-sm bg-white dark:bg-slate-900 p-6 rounded-2xl shadow-xl border border-slate-200 dark:border-slate-800 space-y-5">
+            <h2 class="text-xl font-black">Локальный режим</h2>
+            <p class="text-xs text-slate-400 font-medium">Играйте по очереди, передавая один телефон друг другу.</p>
+            <div class="space-y-1.5">
+                <label class="block text-[10px] font-bold uppercase tracking-wider text-slate-400">Количество игроков:</label>
+                <input id="total-players" type="number" value="4" min="3" class="w-full px-4 py-3 bg-slate-50 dark:bg-slate-950 border dark:border-slate-800 rounded-xl font-bold text-sm focus:outline-none focus:border-red-500 transition">
             </div>
-            <p id="copy-toast" class="text-[11px] text-emerald-500 font-bold mt-1 opacity-0 transition-opacity">📋 Код скопирован!</p>
-            <p id="lobby-players-count" class="text-xs text-slate-400 font-medium">В комнате: 1 участников</p>
+            <div class="flex gap-3 pt-2">
+                <button onclick="backToMainMenu()" class="flex-1 py-3 border dark:border-slate-800 hover:bg-slate-100 dark:hover:bg-slate-950 font-bold rounded-xl text-xs uppercase tracking-wider active:scale-95 transition">Назад</button>
+                <button onclick="alert('Локальный режим временно отключен, тестируйте Онлайн!')" class="flex-1 py-3 bg-slate-900 dark:bg-white text-white dark:text-slate-950 font-black rounded-xl text-xs uppercase tracking-wider active:scale-95 transition">Далее</button>
+            </div>
         </div>
-        <div>
-            <label class="block text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-2">Игроки в лобби:</label>
-            <div id="lobby-players-list" class="space-y-1.5 max-h-40 overflow-y-auto bg-slate-50 dark:bg-slate-950/50 border border-slate-200 p-2 rounded-xl text-xs"></div>
-        </div>
-        <div id="host-settings-block" class="pt-2 border-t border-slate-200 dark:border-slate-800 hidden">
-            <button onclick="startGameOnline()" class="w-full py-3.5 bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 text-white rounded-xl font-bold shadow-md active:scale-95 transition">
-                Раздать роли и Начать 🚀
-            </button>
-        </div>
-        <div id="player-waiting-block" class="pt-4 border-t border-slate-200 dark:border-slate-800 text-center space-y-2 hidden">
-            <p class="text-sm text-slate-400 font-medium animate-pulse">⏳ Ожидаем, пока Хост запустит игру...</p>
-        </div>
-    </div>
 
-    <div id="online-card-screen" class="hidden w-full max-w-sm text-center space-y-5 z-10">
-        <h2 class="text-2xl font-black text-slate-800 dark:text-white">Твоя секретная карта</h2>
-        <div class="card-container h-64 w-full cursor-pointer" onclick="document.getElementById('secret-card').classList.toggle('flipped')">
-            <div id="secret-card" class="card relative w-full h-full shadow-xl">
-                <div class="card-face absolute inset-0 bg-white dark:bg-slate-900 rounded-2xl flex flex-col items-center justify-center p-6 border border-slate-200 dark:border-slate-800 text-center">
-                    <p class="text-lg font-bold text-red-500">Нажми, чтобы открыть карту 👁️</p>
-                </div>
-                <div id="secret-card-face" class="card-face back absolute inset-0 rounded-2xl flex flex-col items-center justify-center p-6 text-center border-2 bg-slate-50 dark:bg-slate-900"></div>
-            </div>
-        </div>
-        <button onclick="confirmCardReadOnline()" class="w-full py-3 bg-red-500 text-white font-bold rounded-xl active:scale-95 transition">В игру! 👌</button>
-    </div>
-
-    <div id="game-screen-online" class="hidden w-full max-w-sm bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-200 dark:border-slate-800 space-y-4">
-        <div class="flex justify-between items-center bg-slate-100 dark:bg-slate-950 p-3 rounded-xl border border-slate-200 dark:border-slate-800">
-            <div>
-                <h2 id="game-round-title" class="text-sm font-black text-slate-800 dark:text-slate-200">Раунд 1</h2>
-                <div class="text-[10px] text-slate-500">Секретное слово: <span id="game-my-loc" class="font-bold text-red-500">Загрузка...</span></div>
-            </div>
-            <button onclick="showSecretCardAgain()" class="px-3 py-1.5 bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300 rounded-lg text-xs font-bold active:scale-95">Роль</button>
-        </div>
-        <div id="chat-messages" class="h-48 overflow-y-auto border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 p-2 rounded-xl text-xs space-y-1"></div>
-        <div class="space-y-2">
-            <div id="chat-turn-indicator" class="text-[11px] font-bold text-center py-1 bg-amber-500/10 text-amber-500 rounded">Ожидание...</div>
-            <div class="flex gap-2">
-                <input id="chat-input" type="text" placeholder="Твоё слово..." class="flex-1 px-3 py-2 bg-slate-100 dark:bg-slate-950 rounded-xl text-xs focus:outline-none border dark:border-slate-800">
-                <button onclick="sendWordOnline()" class="px-4 bg-emerald-500 text-white font-bold rounded-xl text-xs active:scale-95">Отправить</button>
-            </div>
-        </div>
-        <div id="spy-guess-area" class="hidden border-t pt-3 border-slate-200 dark:border-slate-800 space-y-1.5">
-            <label class="block text-[10px] font-bold uppercase tracking-wider text-red-500">Вы — Шпион! Угадайте секретное слово:</label>
-            <div class="flex gap-2">
-                <input id="spy-guess-input" type="text" placeholder="Напишите слово..." class="flex-1 px-3 py-2 bg-red-500/5 border border-red-500/20 rounded-xl text-xs focus:outline-none">
-                <button onclick="sendSpyGuess()" class="px-3 bg-red-500 text-white font-bold rounded-xl text-xs active:scale-95">Ответить</button>
-            </div>
-        </div>
-    </div>
-
-    <div id="voting-screen-online" class="hidden w-full max-w-sm bg-white dark:bg-slate-900 p-6 rounded-2xl shadow-xl border border-slate-200 dark:border-slate-800 space-y-4">
-        <h2 class="text-xl font-black text-center">Голосование раунда!</h2>
-        
-        <div id="voting-content-area" class="space-y-4">
-            <div id="voting-players-list" class="space-y-2"></div>
+        <div id="setup-screen-online" class="hidden w-full max-w-sm bg-white dark:bg-slate-900 p-6 rounded-2xl shadow-xl border border-slate-200 dark:border-slate-800 space-y-4">
+            <h2 class="text-xl font-black text-center bg-gradient-to-r from-red-500 to-orange-500 bg-clip-text text-transparent uppercase tracking-wider text-sm">Сетевой узел подключения</h2>
             
-            <div id="spy-voting-guess-area" class="hidden border-t pt-3 border-slate-200 dark:border-slate-800 space-y-1.5">
-                <label class="block text-[10px] font-bold uppercase tracking-wider text-red-500 text-center">Выкупили? Есть шанс спастись! Угадайте слово:</label>
+            <div class="space-y-1.5">
+                <label class="block text-[10px] font-bold uppercase tracking-wider text-slate-400">Ваш позывной (Никнейм):</label>
+                <input id="online-nickname" type="text" placeholder="Введите имя..." maxlength="12" class="w-full px-4 py-3 bg-slate-50 dark:bg-slate-950 border dark:border-slate-800 rounded-xl font-bold text-sm focus:outline-none focus:border-red-500 transition">
+            </div>
+
+            <div class="decor-line h-[1px] w-full my-2"></div>
+
+            <div class="space-y-2">
+                <button onclick="createLobby()" class="w-full py-3.5 bg-slate-900 dark:bg-white text-white dark:text-slate-950 font-black rounded-xl text-xs uppercase tracking-wider active:scale-95 transition shadow-lg">👑 Создать новую комнату</button>
+                
+                <div class="relative flex items-center justify-center my-3">
+                    <span class="absolute px-3 bg-white dark:bg-slate-900 text-[10px] font-bold text-slate-400 uppercase tracking-widest">или войти в существующую</span>
+                    <div class="w-full h-[1px] bg-slate-100 dark:bg-slate-800"></div>
+                </div>
+
                 <div class="flex gap-2">
-                    <input id="spy-voting-guess-input" type="text" placeholder="Ваша последняя попытка..." class="flex-1 px-3 py-2 bg-red-500/5 border border-red-500/20 rounded-xl text-xs focus:outline-none text-slate-900 dark:text-white font-bold">
-                    <button onclick="sendSpyVotingGuess()" class="px-3 bg-gradient-to-r from-red-500 to-orange-500 text-white font-black rounded-xl text-xs active:scale-95 transition">Ответить 💥</button>
+                    <input id="online-code-input" type="text" placeholder="КОД ИГРЫ" maxlength="5" class="w-2/3 px-4 py-3 text-center bg-slate-50 dark:bg-slate-950 border dark:border-slate-800 rounded-xl font-black text-sm uppercase tracking-widest focus:outline-none focus:border-orange-500 transition">
+                    <button onclick="joinLobby()" class="w-1/3 bg-gradient-to-r from-red-500 to-orange-500 text-white font-black rounded-xl text-xs uppercase tracking-wider active:scale-95 transition shadow-md shadow-red-500/10">Войти 🚪</button>
+                </div>
+            </div>
+
+            <button onclick="backToMainMenu()" class="w-full mt-2 py-2.5 text-center text-[10px] font-bold text-slate-400 hover:text-slate-600 uppercase tracking-widest transition">← В главное меню</button>
+        </div>
+
+        <div id="online-lobby-screen" class="hidden w-full max-w-sm bg-white dark:bg-slate-900 p-6 rounded-2xl shadow-xl border border-slate-200 dark:border-slate-800 space-y-4">
+            <div class="text-center space-y-1">
+                <p class="text-[10px] font-extrabold tracking-widest text-slate-400 uppercase">Шифр доступа к комнате</p>
+                <div class="flex items-center justify-center gap-2">
+                    <span id="lobby-code-display" class="text-3xl font-black tracking-widest bg-gradient-to-r from-red-500 to-orange-500 bg-clip-text text-transparent">XXXXX</span>
+                    <button onclick="copyCode()" class="p-1.5 bg-slate-50 dark:bg-slate-950 border dark:border-slate-800 rounded-lg text-xs active:scale-90 transition">📋</button>
+                </div>
+                <div id="copy-toast" class="text-[9px] text-emerald-500 font-bold uppercase opacity-0 transition duration-300">Код успешно скопирован!</div>
+            </div>
+
+            <div class="border-t border-b border-slate-100 dark:border-slate-800 py-3 space-y-2">
+                <div id="lobby-players-count" class="text-xs font-bold text-slate-400">В комнате: 0 участников</div>
+                <div id="lobby-players-list" class="max-h-40 overflow-y-auto space-y-1.5 pr-1"></div>
+            </div>
+
+            <div id="host-settings-block" class="hidden space-y-2">
+                <button onclick="startGameOnline()" class="w-full py-3.5 bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 text-white font-black rounded-xl text-xs uppercase tracking-wider shadow-lg shadow-emerald-500/10 active:scale-[0.97] transition">🚀 Запустить игру в сеть</button>
+            </div>
+
+            <div id="player-waiting-block" class="hidden text-center py-3 bg-slate-50 dark:bg-slate-950 border dark:border-slate-800 rounded-xl animate-pulse">
+                <p class="text-xs font-bold text-slate-400">Главнокомандующий настраивает десант...</p>
+            </div>
+        </div>
+
+        <div id="online-card-screen" class="hidden w-full max-w-sm space-y-4">
+            <div class="card-container w-full aspect-[3/4] max-h-96">
+                <div id="secret-card" class="card w-full h-full relative cursor-pointer" onclick="this.classList.toggle('flipped')">
+                    
+                    <div class="card-face absolute w-full h-full bg-slate-900 text-white p-6 rounded-3xl border-4 border-red-500 flex flex-col justify-between shadow-2xl items-center text-center">
+                        <div class="w-full border-b border-red-500/20 pb-3 text-[10px] font-black tracking-widest text-red-500">SECRET MATERIAL // TOP PRIORITY</div>
+                        <div class="space-y-2">
+                            <span class="text-5xl">🕵️‍♂️</span>
+                            <h3 class="text-xl font-black uppercase tracking-tight">Ваш секретный пакет</h3>
+                            <p class="text-[11px] text-slate-400 font-medium px-4">Нажмите на карту, чтобы перевернуть её и узнать свою секретную директиву</p>
+                        </div>
+                        <div class="text-[9px] text-slate-500 font-bold">SPYFALL ENGINE v2.0</div>
+                    </div>
+
+                    <div class="card-face back absolute w-full h-full bg-white dark:bg-slate-900 text-slate-900 dark:text-white p-6 rounded-3xl border-4 border-slate-200 dark:border-slate-800 flex flex-col justify-between shadow-2xl text-center items-center">
+                        <div class="w-full border-b dark:border-slate-800 pb-2 text-[10px] font-black tracking-widest text-slate-400">ВАША СЕКРЕТНАЯ РОЛЬ</div>
+                        <div id="secret-card-face" class="my-auto space-y-1"></div>
+                        <div class="text-[9px] text-slate-400 font-bold uppercase tracking-wider">Кликните, чтобы спрятать роль от чужих глаз</div>
+                    </div>
+
+                </div>
+            </div>
+            <button onclick="confirmCardReadOnline()" class="w-full py-3.5 bg-slate-900 dark:bg-white text-white dark:text-slate-950 font-black rounded-xl text-xs uppercase tracking-wider shadow-lg active:scale-95 transition">В Бой! Я всё запомнил 🛠️</button>
+        </div>
+
+        <div id="game-screen-online" class="hidden w-full max-w-md bg-white dark:bg-slate-900 p-5 rounded-2xl shadow-xl border border-slate-200 dark:border-slate-800 space-y-4">
+            <div class="flex justify-between items-center bg-slate-50 dark:bg-slate-950 p-3 rounded-xl border dark:border-slate-800">
+                <div>
+                    <span class="block text-[9px] font-bold text-slate-400 uppercase tracking-widest">Текущая фаза:</span>
+                    <span id="game-round-title" class="text-xs font-black text-indigo-500">Раунд 1 | Ход 1</span>
+                </div>
+                <div class="text-right">
+                    <span class="block text-[9px] font-bold text-slate-400 uppercase tracking-widest">Твоя памятка:</span>
+                    <span id="game-my-loc" class="text-xs font-black text-emerald-500" onclick="showSecretCardAgain()">Посмотреть</span>
+                </div>
+            </div>
+
+            <div class="space-y-1.5">
+                <label class="block text-[10px] font-bold uppercase tracking-wider text-slate-400">Цепочка ассоциаций текущего круга:</label>
+                <div id="chat-messages" class="h-44 overflow-y-auto border dark:border-slate-800 bg-slate-50 dark:bg-slate-950 rounded-xl p-2.5 space-y-2 text-xs"></div>
+            </div>
+
+            <div class="space-y-2 pt-1">
+                <div id="chat-turn-indicator" class="text-[11px] font-bold text-center py-1">Ожидание...</div>
+                
+                <div class="flex gap-2">
+                    <input id="chat-input" type="text" placeholder="Ждем вашей очереди..." disabled class="flex-1 px-4 py-3 bg-slate-50 dark:bg-slate-950 border dark:border-slate-800 rounded-xl text-xs focus:outline-none focus:border-indigo-500 font-bold transition disabled:opacity-50">
+                    <button onclick="sendWordOnline()" class="px-4 bg-indigo-600 hover:bg-indigo-700 text-white font-black rounded-xl text-xs active:scale-95 transition shadow-md shadow-indigo-600/10">ОК</button>
+                </div>
+            </div>
+
+            <div id="spy-guess-area" class="hidden border-t pt-3 border-slate-100 dark:border-slate-800 space-y-2">
+                <label class="block text-[10px] font-bold uppercase tracking-wider text-red-500 text-center">Вы поняли секретное слово? Введите его для досрочной победы:</label>
+                <div class="flex gap-2">
+                    <input id="spy-guess-input" type="text" placeholder="Название слова..." class="flex-1 px-3 py-2 bg-red-500/5 border border-red-500/20 rounded-xl text-xs focus:outline-none text-slate-900 dark:text-white font-bold">
+                    <button onclick="sendSpyGuess()" class="px-4 bg-gradient-to-r from-red-500 to-red-600 text-white font-black rounded-xl text-xs active:scale-95 transition">💥 Ответ</button>
                 </div>
             </div>
         </div>
 
-        <div id="voting-wait-msg" class="hidden text-center py-8 space-y-2">
-            <div class="text-sm font-bold text-slate-400 animate-pulse">Голос учтён! Ждём остальных...</div>
-        </div>
-    </div>
-        
-        <div id="spy-voting-guess-area" class="hidden border-t pt-3 border-slate-200 dark:border-slate-800 space-y-1.5">
-            <label class="block text-[10px] font-bold uppercase tracking-wider text-red-500 text-center">Выкупили? Есть шанс спастись! Угадайте слово:</label>
-            <div class="flex gap-2">
-                <input id="spy-voting-guess-input" type="text" placeholder="Ваша последняя попытка..." class="flex-1 px-3 py-2 bg-red-500/5 border border-red-500/20 rounded-xl text-xs focus:outline-none text-slate-900 dark:text-white font-bold">
-                <button onclick="sendSpyVotingGuess()" class="px-3 bg-gradient-to-r from-red-500 to-orange-500 text-white font-black rounded-xl text-xs active:scale-95 transition">Ответить 💥</button>
+        <div id="voting-screen-online" class="hidden w-full max-w-sm bg-white dark:bg-slate-900 p-6 rounded-2xl shadow-xl border border-slate-200 dark:border-slate-800 space-y-4">
+            <h2 class="text-xl font-black text-center">Голосование раунда!</h2>
+            
+            <div id="voting-content-area" class="space-y-4">
+                <div id="voting-players-list" class="space-y-2"></div>
+                
+                <div id="spy-voting-guess-area" class="hidden border-t pt-3 border-slate-200 dark:border-slate-800 space-y-1.5">
+                    <label class="block text-[10px] font-bold uppercase tracking-wider text-red-500 text-center">Выкупили? Есть шанс спастись! Угадайте слово:</label>
+                    <div class="flex gap-2">
+                        <input id="spy-voting-guess-input" type="text" placeholder="Ваша последняя попытка..." class="flex-1 px-3 py-2 bg-red-500/5 border border-red-500/20 rounded-xl text-xs focus:outline-none text-slate-900 dark:text-white font-bold">
+                        <button onclick="sendSpyVotingGuess()" class="px-3 bg-gradient-to-r from-red-500 to-orange-500 text-white font-black rounded-xl text-xs active:scale-95 transition">Ответить 💥</button>
+                    </div>
+                </div>
+            </div>
+
+            <div id="voting-wait-msg" class="hidden text-center py-8 space-y-2">
+                <div class="text-sm font-bold text-slate-400 animate-pulse">Голос учтён! Ждём остальных...</div>
             </div>
         </div>
-    </div>
 
-    <div id="result-screen" class="hidden w-full max-w-sm bg-white dark:bg-slate-900 p-6 rounded-2xl shadow-xl border border-slate-200 dark:border-slate-800 text-center space-y-4">
-        <div id="result-box" class="p-4 rounded-xl"></div>
-        <button onclick="backToLobby()" class="w-full py-3 bg-indigo-600 text-white font-bold rounded-xl active:scale-95">Вернуться в лобби</button>
-    </div>
+        <div id="result-screen" class="hidden w-full max-w-sm bg-white dark:bg-slate-900 p-6 rounded-2xl shadow-xl border border-slate-200 dark:border-slate-800 text-center space-y-5">
+            <h2 class="text-2xl font-black tracking-tight">Игра Окончена</h2>
+            
+            <div id="result-box" class="p-5 rounded-2xl border-2"></div>
 
-    <div id="round-alert-modal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm hidden">
-        <div class="w-full max-w-sm p-6 bg-slate-900 border-2 border-amber-500/40 rounded-2xl text-center shadow-2xl">
-            <h3 class="text-lg font-black text-white mb-1">Никто не исключён!</h3>
-            <p class="text-xs text-slate-400 mb-4">Ничья или скип раунда. Игра продолжается.</p>
-            <button onclick="closeRoundModal()" class="w-full py-2.5 bg-amber-500 text-white font-bold rounded-xl text-xs">Продолжить</button>
+            <button onclick="backToLobby()" class="w-full py-3.5 bg-slate-900 dark:bg-white text-white dark:text-slate-950 font-black rounded-xl text-xs uppercase tracking-wider shadow-md active:scale-95 transition">Вернуться в лобби ↩️</button>
+        </div>
+
+    </main>
+
+    <div id="round-alert-modal" class="fixed inset-0 bg-slate-950/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+        <div class="bg-white dark:bg-slate-900 border dark:border-slate-800 p-6 rounded-2xl w-full max-w-xs text-center space-y-4 shadow-2xl">
+            <div class="w-12 h-12 bg-amber-500/10 text-amber-500 border border-amber-500/20 rounded-full flex items-center justify-center text-xl mx-auto animate-bounce">⚖️</div>
+            <div class="space-y-1">
+                <h4 class="text-base font-black">Ничья или Скип!</h4>
+                <p class="text-xs text-slate-400 font-medium">Большинство проголосовало за пропуск либо голоса разделились. Шпион не обнаружен.</p>
+            </div>
+            <button onclick="closeRoundModal()" class="w-full py-2.5 bg-amber-500 hover:bg-amber-600 text-slate-950 font-black rounded-xl text-xs uppercase tracking-wider active:scale-95 transition">Перейти к следующему раунду</button>
         </div>
     </div>
 
@@ -289,11 +312,12 @@
         });
 
         socket.on('gameStarted', (data) => {
-            // АВТО-ЗАТЯГИВАНИЕ: Скрываем абсолютно все лишние экраны, включая экран результатов и лобби
+            // АВТО-ЗАТЯГИВАНИЕ: Скрываем абсолютно все лишние экраны
             document.getElementById('online-lobby-screen').classList.add('hidden');
             document.getElementById('result-screen').classList.add('hidden');
             document.getElementById('voting-screen-online').classList.add('hidden');
             document.getElementById('game-screen-online').classList.add('hidden');
+            document.getElementById('round-alert-modal').classList.add('hidden');
             
             // ОЧИСТКА ПОЛЕЙ ВВОДА ДЛЯ НОВОЙ ИГРЫ
             document.getElementById('chat-input').value = "";
@@ -366,12 +390,11 @@
             inp.value = "";
         }
 
-        // ОБНОВЛЕННАЯ ФУНКЦИЯ ГОЛОСОВАНИЯ (ТЕПЕРЬ С ПРОВЕРКОЙ НА ШПИОНА)
         socket.on('votingStarted', (data) => {
             document.getElementById('game-screen-online').classList.add('hidden');
             document.getElementById('round-alert-modal').classList.add('hidden');
             
-            // Сбрасываем отображение экрана голосования в исходное состояние
+            // СБРОС ИНТЕРФЕЙСА ГОЛОСОВАНИЯ В РАБОЧИЙ ВИД
             document.getElementById('voting-wait-msg').classList.add('hidden');
             document.getElementById('voting-content-area').classList.remove('hidden');
             document.getElementById('voting-screen-online').classList.remove('hidden');
@@ -390,7 +413,7 @@
                 ⏭️ Пропустить голосование (Скип)
             </button>`;
 
-            // Показываем поле ответа шпиону, если он шпион, и очищаем его
+            // Очищаем инпут шпиона на голосовании
             const spyVotingInput = document.getElementById('spy-voting-guess-input');
             if (spyVotingInput) spyVotingInput.value = "";
 
@@ -401,14 +424,13 @@
             }
         });
 
-       function voteForPlayer(targetId) {
+        function voteForPlayer(targetId) {
             socket.emit('submitVote', { roomCode: roomCode, targetId: targetId });
-            // Вместо уничтожения всего HTML, просто переключаем видимость блоков внутри экрана голосования
+            // Вместо стирания HTML, просто переключаем блоки видимости
             document.getElementById('voting-content-area').classList.add('hidden');
             document.getElementById('voting-wait-msg').classList.remove('hidden');
         }
 
-        // НОВАЯ ФУНКЦИЯ ДЛЯ ОТПРАВКИ ОТВЕТА ШПИОНА ИЗ ОКНА ГОЛОСОВАНИЯ
         function sendSpyVotingGuess() {
             const input = document.getElementById('spy-voting-guess-input');
             const guessWord = input.value.trim();
@@ -424,6 +446,10 @@
 
         function closeRoundModal() {
             document.getElementById('round-alert-modal').classList.add('hidden');
+            // Восстанавливаем дефолтное состояние структуры голосования под будущие раунды
+            document.getElementById('voting-wait-msg').classList.add('hidden');
+            document.getElementById('voting-content-area').classList.remove('hidden');
+            
             document.getElementById('game-screen-online').classList.remove('hidden');
         }
 
@@ -446,13 +472,26 @@
         function sendSpyGuess() {
             const input = document.getElementById('spy-guess-input');
             const guessWord = input.value.trim();
-            if (!guessWord) return alert('Введите загаданное слово!');
-            socket.emit('spyGuessLocation', { code: roomCode, location: guessWord });
+            if (!guessWord) return alert('Введите название локации!');
+            
+            if (confirm(`Вы уверены, что хотите назвать локацию "${guessWord}"? Игра мгновенно завершится для всех игроков.`)) {
+                socket.emit('spyGuessLocation', {
+                    code: roomCode,
+                    location: guessWord
+                });
+            }
         }
 
         function backToLobby() {
             document.getElementById('result-screen').classList.add('hidden');
-            showLobby();
+            document.getElementById('online-lobby-screen').classList.remove('hidden');
+            if(isHost) {
+                document.getElementById('host-settings-block').classList.remove('hidden');
+                document.getElementById('player-waiting-block').classList.add('hidden');
+            } else {
+                document.getElementById('host-settings-block').classList.add('hidden');
+                document.getElementById('player-waiting-block').classList.remove('hidden');
+            }
         }
     </script>
 </body>
