@@ -104,7 +104,7 @@
 
             <div class="flex gap-3 pt-2">
                 <button onclick="backToMainMenu()" class="flex-1 py-3 border dark:border-slate-800 hover:bg-slate-100 dark:hover:bg-slate-950 font-bold rounded-xl text-xs uppercase tracking-wider active:scale-95 transition">Назад</button>
-                <button onclick="startOfflineGameMock()" class="flex-1 py-3 bg-slate-900 dark:bg-white text-white dark:text-slate-950 font-black rounded-xl text-xs uppercase tracking-wider active:scale-95 transition">Старт 🏁</button>
+                <button onclick="startOfflineGame()" class="flex-1 py-3 bg-slate-900 dark:bg-white text-white dark:text-slate-950 font-black rounded-xl text-xs uppercase tracking-wider active:scale-95 transition">Старт 🏁</button>
             </div>
         </div>
 
@@ -133,9 +133,84 @@
                 </div>
             </div>
 
-            <button onclick="backToMainMenu()" class="w-full mt-2 py-2.5 text-center text-[10px] font-bold text-slate-400 hover:text-slate-600 uppercase tracking-widest transition">← В главное меню</button>
+            <!-- Добавленная кнопка возврата к режимам -->
+            <button onclick="backToMainMenu()" class="w-full mt-2 py-2.5 text-center text-xs font-bold text-slate-400 hover:text-slate-600 dark:hover:text-white uppercase tracking-wider border border-dashed border-slate-200 dark:border-slate-800 rounded-xl transition duration-200">← К выбору режимов</button>
         </div>
 
+        <!-- ЭКРАН ОФЛАЙН: ПООЧЕРЕДНОЕ РАСПРЕДЕЛЕНИЕ КАРТ -->
+        <div id="offline-distribution-screen" class="hidden w-full max-w-sm space-y-4">
+            <div class="text-center">
+                <h3 id="offline-player-turn-title" class="text-lg font-black text-red-500 uppercase tracking-tight">Игрок 1, подойдите к экрану</h3>
+                <p class="text-[11px] text-slate-400 font-medium">Убедитесь, что никто не подглядывает</p>
+            </div>
+            
+            <div class="card-container w-full aspect-[3/4] max-h-96">
+                <div id="offline-secret-card" class="card w-full h-full relative cursor-pointer" onclick="flipOfflineCard()">
+                    
+                    <!-- Рубашка -->
+                    <div class="card-face absolute w-full h-full bg-slate-900 text-white p-6 rounded-3xl border-4 border-red-500 flex flex-col justify-between shadow-2xl items-center text-center">
+                        <div class="w-full border-b border-red-500/20 pb-3 text-[10px] font-black tracking-widest text-red-500">OFFLINE PASS CARD // SECRET</div>
+                        <div class="space-y-2">
+                            <span class="text-5xl">👀</span>
+                            <h3 class="text-xl font-black uppercase tracking-tight">Нажмите, чтобы открыть</h3>
+                            <p class="text-[11px] text-slate-400 font-medium px-4">Карта перевернётся и покажет вашу тайную роль в этом раунде</p>
+                        </div>
+                        <div class="text-[9px] text-slate-500 font-bold">LOCAL ENGINE v2.0</div>
+                    </div>
+
+                    <!-- Лицо карты -->
+                    <div class="card-face back absolute w-full h-full bg-white dark:bg-slate-900 text-slate-900 dark:text-white p-6 rounded-3xl border-4 border-slate-200 dark:border-slate-800 flex flex-col justify-between shadow-2xl text-center items-center">
+                        <div class="w-full border-b dark:border-slate-800 pb-2 text-[10px] font-black tracking-widest text-slate-400">ВАША ЛОКАЛЬНАЯ РОЛЬ</div>
+                        <div id="offline-card-face-content" class="my-auto space-y-1"></div>
+                        <div class="text-[9px] text-slate-400 font-bold uppercase tracking-wider">Кликните обратно, чтобы спрятать</div>
+                    </div>
+
+                </div>
+            </div>
+            <button id="offline-card-confirm-btn" onclick="nextOfflinePlayerCard()" disabled class="w-full py-3.5 bg-slate-300 dark:bg-slate-800 text-slate-400 font-black rounded-xl text-xs uppercase tracking-wider transition opacity-50 cursor-not-allowed">Сначала откройте карту</button>
+        </div>
+
+        <!-- ЭКРАН ОФЛАЙН: ИГРОВОЙ ЭКРАН С ТАЙМЕРОМ -->
+        <div id="offline-gameplay-screen" class="hidden w-full max-w-sm bg-white dark:bg-slate-900 p-6 rounded-2xl shadow-xl border border-slate-200 dark:border-slate-800 text-center space-y-6">
+            <div class="space-y-1">
+                <span class="text-[10px] font-black tracking-widest text-red-500 uppercase block">Идет бурное обсуждение</span>
+                <h2 class="text-2xl font-black">Время раунда</h2>
+            </div>
+            
+            <div class="inline-flex items-center justify-center p-6 bg-slate-50 dark:bg-slate-950 border border-slate-100 dark:border-slate-800 rounded-2xl w-full">
+                <span id="offline-timer-display" class="text-5xl font-black tracking-wider bg-gradient-to-r from-red-500 to-orange-500 bg-clip-text text-transparent font-mono">05:00</span>
+            </div>
+
+            <p class="text-xs text-slate-400 font-medium px-2">Задавайте друг другу каверзные вопросы. По истечении таймера начнётся финальное голосование!</p>
+            
+            <div class="decor-line h-[1px] w-full"></div>
+
+            <div class="space-y-2">
+                <button onclick="triggerOfflineSpyVoteScreen()" class="w-full py-3 bg-red-500 hover:bg-red-600 text-white font-black rounded-xl text-xs uppercase tracking-wider active:scale-95 transition shadow-lg shadow-red-500/10">🚨 Начать голосование досрочно</button>
+                <button onclick="quitOfflineGame()" class="w-full py-2.5 border dark:border-slate-800 text-slate-400 hover:text-red-500 text-xs font-bold uppercase tracking-wider rounded-xl transition">Завершить партию</button>
+            </div>
+        </div>
+
+        <!-- ЭКРАН ОФЛАЙН: ФИНАЛЬНОЕ ЛОКАЛЬНОЕ ГОЛОСОВАНИЕ -->
+        <div id="offline-voting-screen" class="hidden w-full max-w-md bg-white dark:bg-slate-900 p-6 rounded-2xl shadow-xl border border-slate-200 dark:border-slate-800 space-y-4">
+            <div class="text-center">
+                <h2 class="text-xl font-black uppercase">Кто шпион? 🕵️‍♂️</h2>
+                <p class="text-xs text-slate-400 font-medium mt-1">Выберите игрока, против которого проголосовало большинство</p>
+            </div>
+            <div id="offline-voting-list" class="space-y-2 max-h-60 overflow-y-auto pr-1"></div>
+            
+            <div class="decor-line h-[1px] w-full"></div>
+            
+            <div class="space-y-1">
+                <label class="block text-[10px] font-bold uppercase tracking-wider text-red-500 text-center">Шпион хочет угадать слово? Введите для проверки:</label>
+                <div class="flex gap-2">
+                    <input id="offline-spy-guess-input" type="text" placeholder="Загаданный предмет/место..." class="flex-1 px-3 py-2 bg-red-500/5 border border-red-500/20 rounded-xl text-xs focus:outline-none text-slate-900 dark:text-white font-bold">
+                    <button onclick="triggerOfflineSpyGuessSubmit()" class="px-4 bg-gradient-to-r from-red-500 to-orange-500 text-white font-black rounded-xl text-xs active:scale-95 transition">💥 Ответ</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- ОНЛАЙН ЭКРАНЫ (БЕЗ ИЗМЕНЕНИЙ, ПОЛНОСТЬЮ СИНХРОНИЗИРОВАНЫ) -->
         <!-- ЭКРАН 4 (ОНЛАЙН): ЛОББИ ОЖИДАНИЯ -->
         <div id="online-lobby-screen" class="hidden w-full max-w-sm bg-white dark:bg-slate-900 p-6 rounded-2xl shadow-xl border border-slate-200 dark:border-slate-800 space-y-4">
             <div class="text-center space-y-1">
@@ -165,8 +240,6 @@
         <div id="online-card-screen" class="hidden w-full max-w-sm space-y-4">
             <div class="card-container w-full aspect-[3/4] max-h-96">
                 <div id="secret-card" class="card w-full h-full relative cursor-pointer" onclick="this.classList.toggle('flipped')">
-                    
-                    <!-- Рубашка -->
                     <div class="card-face absolute w-full h-full bg-slate-900 text-white p-6 rounded-3xl border-4 border-red-500 flex flex-col justify-between shadow-2xl items-center text-center">
                         <div class="w-full border-b border-red-500/20 pb-3 text-[10px] font-black tracking-widest text-red-500">SECRET MATERIAL // TOP PRIORITY</div>
                         <div class="space-y-2">
@@ -176,14 +249,11 @@
                         </div>
                         <div class="text-[9px] text-slate-500 font-bold">SPYFALL ENGINE v2.0</div>
                     </div>
-
-                    <!-- Лицо карты -->
                     <div class="card-face back absolute w-full h-full bg-white dark:bg-slate-900 text-slate-900 dark:text-white p-6 rounded-3xl border-4 border-slate-200 dark:border-slate-800 flex flex-col justify-between shadow-2xl text-center items-center">
                         <div class="w-full border-b dark:border-slate-800 pb-2 text-[10px] font-black tracking-widest text-slate-400">ВАША СЕКРЕТНАЯ РОЛЬ</div>
                         <div id="secret-card-face" class="my-auto space-y-1"></div>
                         <div class="text-[9px] text-slate-400 font-bold uppercase tracking-wider">Кликните, чтобы спрятать роль от чужих глаз</div>
                     </div>
-
                 </div>
             </div>
             <button onclick="confirmCardReadOnline()" class="w-full py-3.5 bg-slate-900 dark:bg-white text-white dark:text-slate-950 font-black rounded-xl text-xs uppercase tracking-wider shadow-lg active:scale-95 transition">В Бой! Я всё запомнил 🛠️</button>
@@ -202,23 +272,19 @@
                 </div>
             </div>
 
-            <!-- ИСТОРИЯ АССОЦИАТИВНЫХ СЛОВ -->
             <div class="space-y-1.5">
                 <label class="block text-[10px] font-bold uppercase tracking-wider text-slate-400">Цепочка ассоциаций текущего круга:</label>
                 <div id="chat-messages" class="h-44 overflow-y-auto border dark:border-slate-800 bg-slate-50 dark:bg-slate-950 rounded-xl p-2.5 space-y-2 text-xs"></div>
             </div>
 
-            <!-- ИНДИКАТОР ХОДА И ВВОД СЛОВА -->
             <div class="space-y-2 pt-1">
-                <div id="chat-turn-indicator" class="text-[11px] font-bold text-center py-1">Ожинение...</div>
-                
+                <div id="chat-turn-indicator" class="text-[11px] font-bold text-center py-1">Ожидание...</div>
                 <div class="flex gap-2">
                     <input id="chat-input" type="text" placeholder="Ждем вашей очереди..." disabled class="flex-1 px-4 py-3 bg-slate-50 dark:bg-slate-950 border dark:border-slate-800 rounded-xl text-xs focus:outline-none focus:border-indigo-500 font-bold transition disabled:opacity-50">
                     <button onclick="sendWordOnline()" class="px-4 bg-indigo-600 hover:bg-indigo-700 text-white font-black rounded-xl text-xs active:scale-95 transition shadow-md shadow-indigo-600/10">ОК</button>
                 </div>
             </div>
 
-            <!-- ЗОНА ДЛЯ ШПИОНА -->
             <div id="spy-guess-area" class="hidden border-t pt-3 border-slate-100 dark:border-slate-800 space-y-2">
                 <label class="block text-[10px] font-bold uppercase tracking-wider text-red-500 text-center">Вы поняли секретное слово? Введите его для досрочной победы:</label>
                 <div class="flex gap-2">
@@ -231,10 +297,8 @@
         <!-- ЭКРАН 7 (ОНЛАЙН): ГОЛОСОВАНИЕ -->
         <div id="voting-screen-online" class="hidden w-full max-w-sm bg-white dark:bg-slate-900 p-6 rounded-2xl shadow-xl border border-slate-200 dark:border-slate-800 space-y-4">
             <h2 class="text-xl font-black text-center">Голосование раунда!</h2>
-            
             <div id="voting-content-area" class="space-y-4">
                 <div id="voting-players-list" class="space-y-2"></div>
-                
                 <div id="spy-voting-guess-area" class="hidden border-t pt-3 border-slate-200 dark:border-slate-800 space-y-1.5">
                     <label class="block text-[10px] font-bold uppercase tracking-wider text-red-500 text-center">Выкупили? Есть шанс спастись! Угадайте слово:</label>
                     <div class="flex gap-2">
@@ -243,22 +307,21 @@
                     </div>
                 </div>
             </div>
-
             <div id="voting-wait-msg" class="hidden text-center py-8 space-y-2">
                 <div class="text-sm font-bold text-slate-400 animate-pulse">Голос учтён! Ждём остальных...</div>
             </div>
         </div>
 
-        <!-- ЭКРАН 8 (ОНЛАЙН): ЭКРАН РЕЗУЛЬТАТОВ МАТЧА -->
+        <!-- ЭКРАН 8: ОБЩИЙ ЭКРАН РЕЗУЛЬТАТОВ МАТЧА -->
         <div id="result-screen" class="hidden w-full max-w-sm bg-white dark:bg-slate-900 p-6 rounded-2xl shadow-xl border border-slate-200 dark:border-slate-800 text-center space-y-5">
             <h2 class="text-2xl font-black tracking-tight">Игра Окончена</h2>
             <div id="result-box" class="p-5 rounded-2xl border-2"></div>
-            <button onclick="backToLobby()" class="w-full py-3.5 bg-slate-900 dark:bg-white text-white dark:text-slate-950 font-black rounded-xl text-xs uppercase tracking-wider shadow-md active:scale-95 transition">Вернуться в лобби ↩️</button>
+            <button id="result-back-btn" onclick="backToLobby()" class="w-full py-3.5 bg-slate-900 dark:bg-white text-white dark:text-slate-950 font-black rounded-xl text-xs uppercase tracking-wider shadow-md active:scale-95 transition">Вернуться в лобби ↩️</button>
         </div>
 
     </main>
 
-    <!-- МОДАЛЬНОЕ ОКНО НИЧЬЕЙ -->
+    <!-- МОДАЛЬНОЕ ОКНО ОНЛАЙН НИЧЬЕЙ -->
     <div id="round-alert-modal" class="fixed inset-0 bg-slate-950/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
         <div class="bg-white dark:bg-slate-900 border dark:border-slate-800 p-6 rounded-2xl w-full max-w-xs text-center space-y-4 shadow-2xl">
             <div class="w-12 h-12 bg-amber-500/10 text-amber-500 border border-amber-500/20 rounded-full flex items-center justify-center text-xl mx-auto animate-bounce">⚖️</div>
@@ -267,6 +330,15 @@
                 <p class="text-xs text-slate-400 font-medium">Большинство проголосовало за пропуск либо голоса разделились. Шпион не обнаружен.</p>
             </div>
             <button onclick="closeRoundModal()" class="w-full py-2.5 bg-amber-500 hover:bg-amber-600 text-slate-950 font-black rounded-xl text-xs uppercase tracking-wider active:scale-95 transition">Перейти к следующему раунду</button>
+        </div>
+    </div>
+
+    <!-- КАСТОМНОЕ ОКНО ДЛЯ ОШИБОК И АЛЕРТОВ (ВМЕСТО СТАНДАРТНОГО ALERT) -->
+    <div id="custom-alert-modal" class="fixed inset-0 bg-slate-950/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+        <div class="bg-white dark:bg-slate-900 border dark:border-slate-800 p-5 rounded-2xl w-full max-w-xs text-center space-y-4 shadow-xl">
+            <div id="custom-alert-icon" class="text-2xl">🔔</div>
+            <p id="custom-alert-text" class="text-xs font-bold text-slate-700 dark:text-slate-200 px-1"></p>
+            <button onclick="closeCustomAlert()" class="w-full py-2 bg-slate-900 dark:bg-white text-white dark:text-slate-950 font-black rounded-xl text-xs uppercase tracking-wider active:scale-95 transition">Хорошо</button>
         </div>
     </div>
 
@@ -280,7 +352,7 @@
             </div>
             <div class="flex gap-3">
                 <button onclick="closeSpyConfirmModal()" class="flex-1 py-3 border dark:border-slate-800 dark:hover:bg-slate-950 font-bold rounded-xl text-xs uppercase tracking-wider active:scale-95 transition">Отмена</button>
-                <button onclick="executeConfirmedSpyGuess()" class="flex-1 py-3 bg-gradient-to-r from-red-500 to-orange-500 text-white font-black rounded-xl text-xs uppercase tracking-wider active:scale-95 transition shadow-lg shadow-red-500/10">Подтвердить</button>
+                <button id="spy-modal-submit-btn" onclick="executeConfirmedSpyGuess()" class="flex-1 py-3 bg-gradient-to-r from-red-500 to-orange-500 text-white font-black rounded-xl text-xs uppercase tracking-wider active:scale-95 transition shadow-lg shadow-red-500/10">Подтвердить</button>
             </div>
         </div>
     </div>
@@ -293,9 +365,37 @@
         let myId = "";
         let isHost = false;
         let myRoleData = null;
-        
-        // Переменные для контроля контекста кастомной модалки шпиона
         let activeSpyGuessType = null; 
+
+        // База слов для Локального Оффлайн режима
+        const localPacks = {
+            base: ["Ложка", "Ручка", "Книга", "Стол", "Стул", "Окно", "Дверь", "Лампа", "Кошка", "Собака", "Кровать", "Телефон", "Часы", "Зеркало"],
+            food: ["Шашлык", "Пицца", "Суши", "Борщ", "Торт", "Бургер", "Пельмени", "Паста", "Салат", "Яблоко", "Сыр", "Шоколад", "Кофе", "Лимонад"],
+            places: ["Школа", "Завод", "Больница", "Пляж", "Ресторан", "Кинотеатр", "Самолет", "Поезд", "Отель", "Банк", "Стадион", "Музей", "Космос"]
+        };
+
+        // Переменные состояния оффлайн движка
+        let offlineState = {
+            totalPlayers: 0,
+            totalSpies: 0,
+            gameTime: 0,
+            chosenWord: "",
+            players: [], // Массив объектов {id, roleName, isSpy}
+            currentDistIdx: 0,
+            cardFlipped: false,
+            timerInterval: null,
+            timeLeft: 0
+        };
+
+        function showAlert(text, icon = "🔔") {
+            document.getElementById('custom-alert-icon').innerText = icon;
+            document.getElementById('custom-alert-text').innerText = text;
+            document.getElementById('custom-alert-modal').classList.remove('hidden');
+        }
+
+        function closeCustomAlert() {
+            document.getElementById('custom-alert-modal').classList.add('hidden');
+        }
 
         function toggleTheme() {
             document.documentElement.classList.toggle('dark');
@@ -317,21 +417,210 @@
             document.getElementById('mode-selection-screen').classList.remove('hidden');
         }
 
-        function startOfflineGameMock() {
-            alert('Локальный режим полностью сверстан! Функционал движка в процессе привязки к локальной базе, используйте Онлайн!');
+        /* --- ЛОГИКА ПОЛНОГО ОФФЛАЙН РЕЖИМА (НА ОДНОМ УСТРОЙСТВЕ) --- */
+        function startOfflineGame() {
+            const total = parseInt(document.getElementById('total-players').value) || 4;
+            const spies = parseInt(document.getElementById('total-spies').value) || 1;
+            const time = parseInt(document.getElementById('game-time').value) || 5;
+
+            if (spies >= total - 1) {
+                showAlert("Шпионов слишком много для такого количества игроков!", "⚠️");
+                return;
+            }
+
+            // Формируем пул слов на основе выбранных чекбоксов
+            let wordPool = [...localPacks.base];
+            if (document.getElementById('pack-food').checked) wordPool.push(...localPacks.food);
+            if (document.getElementById('pack-places').checked) wordPool.push(...localPacks.places);
+
+            const randomWord = wordPool[Math.floor(Math.random() * wordPool.length)];
+            
+            offlineState.totalPlayers = total;
+            offlineState.totalSpies = spies;
+            offlineState.gameTime = time;
+            offlineState.chosenWord = randomWord;
+            offlineState.currentDistIdx = 0;
+            offlineState.cardFlipped = false;
+            offlineState.players = [];
+
+            // Генерируем массив индексов шпионов
+            let spyIndices = [];
+            while (spyIndices.length < spies) {
+                let rIdx = Math.floor(Math.random() * total);
+                if (!spyIndices.includes(rIdx)) spyIndices.push(rIdx);
+            }
+
+            for (let i = 0; i < total; i++) {
+                const isSpy = spyIndices.includes(i);
+                offlineState.players.push({
+                    id: i + 1,
+                    isSpy: isSpy,
+                    roleName: isSpy ? "Шпион 🕵️‍♂️" : `Мирный гражданин (Слово: ${randomWord})`
+                });
+            }
+
+            // Переключаем экран на поочередную выдачу
+            document.getElementById('setup-screen-offline').classList.add('hidden');
+            document.getElementById('offline-distribution-screen').classList.remove('hidden');
+            updateOfflineDistributionCard();
         }
 
+        function updateOfflineDistributionCard() {
+            document.getElementById('offline-player-turn-title').innerText = `Игрок ${offlineState.currentDistIdx + 1}, подойдите к экрану`;
+            document.getElementById('offline-secret-card').classList.remove('flipped');
+            offlineState.cardFlipped = false;
+
+            const confirmBtn = document.getElementById('offline-card-confirm-btn');
+            confirmBtn.disabled = true;
+            confirmBtn.className = "w-full py-3.5 bg-slate-300 dark:bg-slate-800 text-slate-400 font-black rounded-xl text-xs uppercase tracking-wider transition opacity-50 cursor-not-allowed";
+            confirmBtn.innerText = "Сначала откройте карту";
+
+            const pData = offlineState.players[offlineState.currentDistIdx];
+            const faceContent = document.getElementById('offline-card-face-content');
+            if (pData.isSpy) {
+                faceContent.innerHTML = `<h3 class="text-2xl font-black text-red-500">Ты ШПИОН! 🕵️‍♂️</h3><p class="text-xs text-slate-400 mt-2">Слушай ассоциации других игроков и попытайся угадать секретное слово!</p>`;
+            } else {
+                faceContent.innerHTML = `<h3 class="text-xl font-black text-emerald-500">Мирный Житель 🏢</h3><p class="text-base font-bold mt-2">Секретное слово:<br><span class="text-2xl text-slate-900 dark:text-white font-black">${offlineState.chosenWord}</span></p>`;
+            }
+        }
+
+        function flipOfflineCard() {
+            const card = document.getElementById('offline-secret-card');
+            card.classList.toggle('flipped');
+            offlineState.cardFlipped = !offlineState.cardFlipped;
+
+            const confirmBtn = document.getElementById('offline-card-confirm-btn');
+            if (offlineState.cardFlipped) {
+                confirmBtn.disabled = false;
+                confirmBtn.className = "w-full py-3.5 bg-slate-900 dark:bg-white text-white dark:text-slate-950 font-black rounded-xl text-xs uppercase tracking-wider active:scale-95 transition shadow-lg";
+                confirmBtn.innerText = "Я запомнил роль ✔️";
+            }
+        }
+
+        function nextOfflinePlayerCard() {
+            offlineState.currentDistIdx++;
+            if (offlineState.currentDistIdx < offlineState.totalPlayers) {
+                updateOfflineDistributionCard();
+            } else {
+                // Все посмотрели свои карты — переходим к таймеру игры
+                document.getElementById('offline-distribution-screen').classList.add('hidden');
+                document.getElementById('offline-gameplay-screen').classList.remove('hidden');
+                startOfflineTimer();
+            }
+        }
+
+        function startOfflineTimer() {
+            offlineState.timeLeft = offlineState.gameTime * 60;
+            updateOfflineTimerDisplay();
+
+            offlineState.timerInterval = setInterval(() => {
+                offlineState.timeLeft--;
+                updateOfflineTimerDisplay();
+
+                if (offlineState.timeLeft <= 0) {
+                    clearInterval(offlineState.timerInterval);
+                    showAlert("Время вышло! Переходим к всеобщему голосованию.", "⏰");
+                    triggerOfflineSpyVoteScreen();
+                }
+            }, 1000);
+        }
+
+        function updateOfflineTimerDisplay() {
+            const m = Math.floor(offlineState.timeLeft / 60).toString().padStart(2, '0');
+            const s = (offlineState.timeLeft % 60).toString().padStart(2, '0');
+            document.getElementById('offline-timer-display').innerText = `${m}:${s}`;
+        }
+
+        function triggerOfflineSpyVoteScreen() {
+            if (offlineState.timerInterval) clearInterval(offlineState.timerInterval);
+            
+            document.getElementById('offline-gameplay-screen').classList.add('hidden');
+            document.getElementById('offline-voting-screen').classList.remove('hidden');
+
+            const vList = document.getElementById('offline-voting-list');
+            vList.innerHTML = "";
+
+            offlineState.players.forEach(p => {
+                vList.innerHTML += `<button onclick="submitOfflineVote(${p.id}, '${p.isSpy}')" class="w-full py-3 px-4 text-left font-bold border rounded-xl flex justify-between bg-slate-50 dark:bg-slate-950 hover:border-red-500 transition active:scale-95">
+                    <span>Игрок ${p.id}</span>
+                    <span class="text-red-500 font-black">Выгнать ❌</span>
+                </button>`;
+            });
+        }
+
+        function submitOfflineVote(playerId, isSpyStr) {
+            const isSpy = (isSpyStr === 'true');
+            document.getElementById('offline-voting-screen').classList.add('hidden');
+            document.getElementById('result-screen').classList.remove('hidden');
+
+            // Кнопка возврата на экране результатов должна вести в главное меню для оффлайна
+            const backBtn = document.getElementById('result-back-btn');
+            backBtn.onclick = quitOfflineGame;
+            backBtn.innerText = "В главное меню ↩️";
+
+            const box = document.getElementById('result-box');
+            if (isSpy) {
+                box.className = "p-5 rounded-2xl border-2 border-emerald-500 bg-emerald-50 dark:bg-emerald-950/20";
+                box.innerHTML = `<h3 class="text-xl font-black text-emerald-600 mb-1">Мирные победили! 🎉</h3><p class="text-xs text-slate-500">Вы успешно вычислили Шпиона (Игрок ${playerId}). Секретное слово было: <b>${offlineState.chosenWord}</b></p>`;
+            } else {
+                box.className = "p-5 rounded-2xl border-2 border-red-500 bg-red-50 dark:bg-red-950/20";
+                box.innerHTML = `<h3 class="text-xl font-black text-red-600 mb-1">Шпион победил! 🕵️‍♂️</h3><p class="text-xs text-slate-500">Вы выгнали мирного жителя (Игрок ${playerId}). Шпион остался незамеченным! Загаданное слово: <b>${offlineState.chosenWord}</b></p>`;
+            }
+        }
+
+        function triggerOfflineSpyGuessSubmit() {
+            const guessInput = document.getElementById('offline-spy-guess-input');
+            const word = guessInput.value.trim();
+            if (!word) {
+                showAlert("Введите слово для проверки!", "⚠️");
+                return;
+            }
+
+            document.getElementById('offline-voting-screen').classList.add('hidden');
+            document.getElementById('result-screen').classList.remove('hidden');
+
+            const backBtn = document.getElementById('result-back-btn');
+            backBtn.onclick = quitOfflineGame;
+            backBtn.innerText = "В главное меню ↩️";
+
+            const isCorrect = (offlineState.chosenWord.toLowerCase() === word.toLowerCase());
+            const box = document.getElementById('result-box');
+
+            if (isCorrect) {
+                box.className = "p-5 rounded-2xl border-2 border-red-500 bg-red-50 dark:bg-red-950/20";
+                box.innerHTML = `<h3 class="text-xl font-black text-red-600 mb-1">Шпион угадал слово! 🕵️‍♂️</h3><p class="text-xs text-slate-500">Шпион совершил идеальный саботаж и назвал правильное слово: <b>${offlineState.chosenWord}</b></p>`;
+            } else {
+                box.className = "p-5 rounded-2xl border-2 border-emerald-500 bg-emerald-50 dark:bg-emerald-950/20";
+                box.innerHTML = `<h3 class="text-xl font-black text-emerald-600 mb-1">Мирные победили! 🎉</h3><p class="text-xs text-slate-500">Шпион назвал неверное слово: "${word}". Загаданным словом было: <b>${offlineState.chosenWord}</b></p>`;
+            }
+            guessInput.value = "";
+        }
+
+        function quitOfflineGame() {
+            if (offlineState.timerInterval) clearInterval(offlineState.timerInterval);
+            document.getElementById('offline-gameplay-screen').classList.add('hidden');
+            document.getElementById('offline-voting-screen').classList.add('hidden');
+            document.getElementById('result-screen').classList.add('hidden');
+            document.getElementById('mode-selection-screen').classList.remove('hidden');
+            
+            // Восстанавливаем дефолтный обработчик кнопки назад у онлайн режима
+            document.getElementById('result-back-btn').onclick = backToLobby;
+            document.getElementById('result-back-btn').innerText = "Вернуться в лобби ↩️";
+        }
+
+
+        /* --- ОНЛАЙН РЕЖИМ (СОКЕТЫ И СЕТЬ) --- */
         function createLobby() {
             const nickname = document.getElementById('online-nickname').value.trim();
-            if (!nickname) return alert('Введите ваш никнейм!');
+            if (!nickname) return showAlert('Введите ваш никнейм!', "👤");
             socket.emit('createRoom', { nickname: nickname });
         }
 
         function joinLobby() {
             const nickname = document.getElementById('online-nickname').value.trim();
             const code = document.getElementById('online-code-input').value.trim().toUpperCase();
-            if (!nickname) return alert('Введите никнейм!');
-            if (code.length !== 5) return alert('Код должен состоять из 5 букв!');
+            if (!nickname) return showAlert('Введите никнейм!', "👤");
+            if (code.length !== 5) return showAlert('Код должен состоять из 5 букв!', "🔑");
             socket.emit('joinRoom', { roomCode: code, nickname: nickname });
         }
 
@@ -387,7 +676,7 @@
         }
 
         socket.on('errorMsg', (msg) => {
-            alert(msg);
+            showAlert(msg, "⚠️");
         });
 
         socket.on('gameStarted', (data) => {
@@ -506,7 +795,6 @@
             document.getElementById('voting-wait-msg').classList.remove('hidden');
         }
 
-        // ВЫЗОВ КАСТОМНОЙ МОДАЛКИ ВМЕСТО CONFIRM
         function triggerSpyConfirmModal(type) {
             let wordToCheck = "";
             if (type === 'normal') {
@@ -516,7 +804,7 @@
             }
 
             if (!wordToCheck) {
-                alert('Введите название слова!');
+                showAlert('Введите название слова!', "⚠️");
                 return;
             }
 
