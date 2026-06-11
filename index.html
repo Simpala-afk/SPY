@@ -21,265 +21,227 @@
 </head>
 <body class="bg-slate-50 dark:bg-slate-950 text-slate-800 dark:text-slate-100 font-sans min-h-screen flex flex-col justify-between antialiased">
 
-    <!-- Кнопка смены темы -->
     <div class="absolute top-4 right-4 z-50">
         <button onclick="toggleTheme()" class="p-2.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl shadow-md text-sm active:scale-95 transition">🌓</button>
     </div>
 
-    <!-- Основной контент-контейнер -->
     <main class="flex-1 flex items-center justify-center p-4">
         
-        <!-- ЭКРАН 1: ВЫБОР РЕЖИМА -->
         <div id="mode-selection-screen" class="w-full max-w-sm bg-white dark:bg-slate-900 p-6 rounded-2xl shadow-xl border border-slate-200 dark:border-slate-800 text-center space-y-6">
             <div class="space-y-2">
                 <div class="inline-flex p-3 bg-red-500/10 text-red-500 rounded-2xl font-black text-2xl tracking-wider uppercase border border-red-500/20 shadow-inner">🕵️‍♂️ SPYFALL</div>
                 <h1 class="text-2xl font-black tracking-tight mt-2 bg-gradient-to-r from-slate-900 to-slate-700 dark:from-white dark:to-slate-400 bg-clip-text text-transparent">Выбор режима игры</h1>
-                <p class="text-xs text-slate-400 font-medium">Выберите формат проведения сессии</p>
             </div>
             <div class="decor-line h-[1px] w-full"></div>
             <div class="space-y-3">
-                <button onclick="switchMode('offline')" class="w-full py-4 px-5 bg-gradient-to-r from-slate-900 to-slate-800 hover:from-black hover:to-slate-900 dark:from-white dark:to-slate-100 dark:hover:from-slate-100 dark:hover:to-slate-200 text-white dark:text-slate-950 font-black rounded-xl shadow-lg transition duration-200 active:scale-[0.98] flex items-center justify-between text-sm group uppercase tracking-wider">
+                <button onclick="switchMode('offline')" class="w-full py-4 px-5 bg-gradient-to-r from-slate-900 to-slate-800 dark:from-white dark:to-slate-100 text-white dark:text-slate-950 font-black rounded-xl shadow-lg transition active:scale-95 flex items-center justify-between text-sm uppercase tracking-wider group">
                     <span>📱 На одном устройстве</span>
-                    <span class="group-hover:translate-x-1 transition duration-200">→</span>
+                    <span class="group-hover:translate-x-1 transition">→</span>
                 </button>
-                <button onclick="switchMode('online')" class="w-full py-4 px-5 bg-gradient-to-r from-red-500 to-orange-500 hover:from-red-600 hover:to-orange-600 text-white font-black rounded-xl shadow-lg shadow-red-500/20 hover:shadow-red-500/30 transition duration-200 active:scale-[0.98] flex items-center justify-between text-sm group uppercase tracking-wider">
-                    <span>🌐 Онлайн по сети (Бета)</span>
-                    <span class="group-hover:translate-x-1 transition duration-200">→</span>
+                <button onclick="switchMode('online')" class="w-full py-4 px-5 bg-gradient-to-r from-red-500 to-orange-500 text-white font-black rounded-xl shadow-lg shadow-red-500/20 transition active:scale-95 flex items-center justify-between text-sm uppercase tracking-wider group">
+                    <span>🌐 Онлайн по сети</span>
+                    <span class="group-hover:translate-x-1 transition">→</span>
                 </button>
             </div>
         </div>
 
-        <!-- ЭКРАН 2 (ОФЛАЙН): НАСТРОЙКА ИГРЫ -->
         <div id="setup-screen-offline" class="hidden w-full max-w-md bg-white dark:bg-slate-900 p-6 rounded-2xl shadow-xl border border-slate-200 dark:border-slate-800 space-y-5">
             <div class="text-center">
-                <h2 class="text-xl font-black uppercase tracking-tight">Локальный режим</h2>
-                <p class="text-xs text-slate-400 font-medium mt-1">Настройка параметров сессии для одного экрана</p>
+                <h2 class="text-xl font-black uppercase">Локальный режим</h2>
+                <p class="text-xs text-slate-400 font-medium">Играем на одном телефоне/экране</p>
             </div>
-            
             <div class="decor-line h-[1px] w-full"></div>
-
             <div class="grid grid-cols-2 gap-4">
                 <div class="space-y-1">
-                    <label class="block text-[10px] font-bold uppercase tracking-wider text-slate-400">Игроков всего:</label>
-                    <input id="total-players" type="number" value="4" min="3" max="12" class="w-full px-3 py-2.5 bg-slate-50 dark:bg-slate-950 border dark:border-slate-800 rounded-xl font-bold text-sm focus:outline-none focus:border-red-500 transition">
+                    <label class="block text-[10px] font-bold uppercase tracking-wider text-slate-400">Игроков:</label>
+                    <input id="total-players" type="number" value="4" min="3" max="12" class="w-full px-3 py-2.5 bg-slate-50 dark:bg-slate-950 border dark:border-slate-800 rounded-xl font-bold text-sm">
                 </div>
                 <div class="space-y-1">
                     <label class="block text-[10px] font-bold uppercase tracking-wider text-slate-400">Шпионов:</label>
-                    <input id="total-spies" type="number" value="1" min="1" max="3" class="w-full px-3 py-2.5 bg-slate-50 dark:bg-slate-950 border dark:border-slate-800 rounded-xl font-bold text-sm focus:outline-none focus:border-red-500 transition">
+                    <input id="total-spies" type="number" value="1" min="1" max="3" class="w-full px-3 py-2.5 bg-slate-50 dark:bg-slate-950 border dark:border-slate-800 rounded-xl font-bold text-sm">
                 </div>
             </div>
-
             <div class="space-y-1">
-                <label class="block text-[10px] font-bold uppercase tracking-wider text-slate-400">Время на раунд (минут):</label>
-                <input id="game-time" type="number" value="5" min="1" max="15" class="w-full px-3 py-2.5 bg-slate-50 dark:bg-slate-950 border dark:border-slate-800 rounded-xl font-bold text-sm focus:outline-none focus:border-red-500 transition">
+                <label class="block text-[10px] font-bold uppercase tracking-wider text-slate-400">Время раунда (минут):</label>
+                <input id="game-time" type="number" value="5" min="1" max="15" class="w-full px-3 py-2.5 bg-slate-50 dark:bg-slate-950 border dark:border-slate-800 rounded-xl font-bold text-sm">
             </div>
-
             <div class="space-y-2">
-                <label class="block text-[10px] font-bold uppercase tracking-wider text-slate-400">Активные пакеты слов:</label>
+                <label class="block text-[10px] font-bold uppercase tracking-wider text-slate-400">Тематические пакеты:</label>
                 <div class="space-y-2">
-                    <label class="flex items-center gap-3 p-2.5 bg-slate-50 dark:bg-slate-950 border dark:border-slate-800 rounded-xl cursor-pointer select-none">
-                        <input type="checkbox" checked disabled class="accent-red-500 w-4 h-4 rounded">
-                        <div class="text-xs">
-                            <span class="font-bold block">📦 Базовый набор (Простые слова)</span>
-                            <span class="text-[10px] text-slate-400 font-medium">Окружающие предметы и понятия</span>
-                        </div>
+                    <label class="flex items-center gap-3 p-2.5 bg-slate-50 dark:bg-slate-950 border dark:border-slate-800 rounded-xl cursor-pointer">
+                        <input type="checkbox" checked disabled class="accent-red-500 w-4 h-4">
+                        <span class="text-xs font-bold">📦 Базовый набор (Простые предметы)</span>
                     </label>
-                    <label class="flex items-center gap-3 p-2.5 bg-slate-50 dark:bg-slate-950 border dark:border-slate-800 rounded-xl cursor-pointer select-none">
-                        <input type="checkbox" id="pack-food" class="accent-red-500 w-4 h-4 rounded">
-                        <div class="text-xs">
-                            <span class="font-bold block">🍔 Пакет «Еда и Кулинария»</span>
-                            <span class="text-[10px] text-slate-400 font-medium">Продукты, блюда, кухонная утварь</span>
-                        </div>
+                    <label class="flex items-center gap-3 p-2.5 bg-slate-50 dark:bg-slate-950 border dark:border-slate-800 rounded-xl cursor-pointer">
+                        <input type="checkbox" id="pack-food" class="accent-red-500 w-4 h-4">
+                        <span class="text-xs font-bold">🍔 Пакет «Еда и Кулинария»</span>
                     </label>
-                    <label class="flex items-center gap-3 p-2.5 bg-slate-50 dark:bg-slate-950 border dark:border-slate-800 rounded-xl cursor-pointer select-none">
-                        <input type="checkbox" id="pack-places" class="accent-red-500 w-4 h-4 rounded">
-                        <div class="text-xs">
-                            <span class="font-bold block">🌍 Пакет «Места и Локации»</span>
-                            <span class="text-[10px] text-slate-400 font-medium">Общественные заведения, географические точки</span>
-                        </div>
+                    <label class="flex items-center gap-3 p-2.5 bg-slate-50 dark:bg-slate-950 border dark:border-slate-800 rounded-xl cursor-pointer">
+                        <input type="checkbox" id="pack-places" class="accent-red-500 w-4 h-4">
+                        <span class="text-xs font-bold">🌍 Пакет «Места и Локации»</span>
                     </label>
                 </div>
             </div>
-
             <div class="flex gap-3 pt-2">
-                <button onclick="backToMainMenu()" class="flex-1 py-3 border dark:border-slate-800 hover:bg-slate-100 dark:hover:bg-slate-950 font-bold rounded-xl text-xs uppercase tracking-wider active:scale-95 transition">Назад</button>
-                <button onclick="startOfflineGame()" class="flex-1 py-3 bg-slate-900 dark:bg-white text-white dark:text-slate-950 font-black rounded-xl text-xs uppercase tracking-wider active:scale-95 transition">Старт 🏁</button>
+                <button onclick="backToMainMenu()" class="flex-1 py-3 border dark:border-slate-800 hover:bg-slate-100 dark:hover:bg-slate-950 font-bold rounded-xl text-xs uppercase transition">Назад</button>
+                <button onclick="startOfflineGame()" class="flex-1 py-3 bg-slate-900 dark:bg-white text-white dark:text-slate-950 font-black rounded-xl text-xs uppercase transition">Старт 🏁</button>
             </div>
         </div>
 
-        <!-- ЭКРАН 3 (ОНЛАЙН): СЕТЕВОЕ ПОДКЛЮЧЕНИЕ С ИСПРАВЛЕННЫМИ ОТСТУПАМИ -->
-        <div id="setup-screen-online" class="hidden w-full max-w-sm bg-white dark:bg-slate-900 p-6 rounded-2xl shadow-xl border border-slate-200 dark:border-slate-800 space-y-5">
-            <h2 class="text-xl font-black text-center bg-gradient-to-r from-red-500 to-orange-500 bg-clip-text text-transparent uppercase tracking-wider text-sm">Сетевой узел подключения</h2>
+        <div id="setup-screen-online" class="hidden w-full max-w-sm bg-white dark:bg-slate-900 p-6 rounded-2xl shadow-xl border border-slate-200 dark:border-slate-800 space-y-6">
+            <h2 class="text-xl font-black text-center bg-gradient-to-r from-red-500 to-orange-500 bg-clip-text text-transparent uppercase tracking-wider">Сетевое подключение</h2>
             
-            <div class="space-y-1.5">
-                <label class="block text-[10px] font-bold uppercase tracking-wider text-slate-400">Ваш позывной (Никнейм):</label>
+            <div class="space-y-2">
+                <label class="block text-[10px] font-bold uppercase tracking-wider text-slate-400">Ваш игровой никнейм:</label>
                 <input id="online-nickname" type="text" placeholder="Введите имя..." maxlength="12" class="w-full px-4 py-3 bg-slate-50 dark:bg-slate-950 border dark:border-slate-800 rounded-xl font-bold text-sm focus:outline-none focus:border-red-500 transition">
             </div>
 
-            <div class="decor-line h-[1px] w-full my-3"></div>
+            <div class="decor-line h-[1px] w-full"></div>
 
-            <!-- Разнесли элементы с помощью space-y-4, убрали наслоение -->
-            <div class="space-y-4">
-                <button onclick="createLobby()" class="w-full py-3.5 bg-slate-900 dark:bg-white text-white dark:text-slate-950 font-black rounded-xl text-xs uppercase tracking-wider active:scale-95 transition shadow-lg">👑 Create New Room</button>
+            <div class="space-y-5">
+                <button onclick="createLobby()" class="w-full py-4 bg-slate-900 dark:bg-white text-white dark:text-slate-950 font-black rounded-xl text-xs uppercase tracking-wider active:scale-95 transition shadow-md">👑 Создать новую комнату</button>
                 
-                <div class="relative flex items-center justify-center my-4 py-2">
-                    <span class="absolute px-3 bg-white dark:bg-slate-900 text-[10px] font-bold text-slate-400 uppercase tracking-widest z-10">или войти в существующую</span>
+                <div class="relative flex items-center justify-center py-2">
+                    <span class="absolute px-4 bg-white dark:bg-slate-900 text-[10px] font-bold text-slate-400 uppercase tracking-widest z-10">или войти в существующую</span>
                     <div class="w-full h-[1px] bg-slate-100 dark:bg-slate-800 absolute top-1/2 left-0"></div>
                 </div>
 
-                <div class="flex gap-2 pt-1">
-                    <input id="online-code-input" type="text" placeholder="КОД ИГРЫ" maxlength="5" class="w-2/3 px-4 py-3 text-center bg-slate-50 dark:bg-slate-950 border dark:border-slate-800 rounded-xl font-black text-sm uppercase tracking-widest focus:outline-none focus:border-orange-500 transition">
-                    <button onclick="joinLobby()" class="w-1/3 bg-gradient-to-r from-red-500 to-orange-500 text-white font-black rounded-xl text-xs uppercase tracking-wider active:scale-95 transition shadow-md shadow-red-500/10">Войти 🚪</button>
+                <div class="flex gap-3 pt-1">
+                    <input id="online-code-input" type="text" placeholder="КОД КОМНАТЫ" maxlength="5" class="w-2/3 px-4 py-3 text-center bg-slate-50 dark:bg-slate-950 border dark:border-slate-800 rounded-xl font-black text-sm uppercase tracking-widest focus:outline-none focus:border-orange-500 transition">
+                    <button onclick="joinLobby()" class="w-1/3 bg-gradient-to-r from-red-500 to-orange-500 text-white font-black rounded-xl text-xs uppercase tracking-wider active:scale-95 transition shadow-md">Войти 🚪</button>
                 </div>
             </div>
 
-            <button onclick="backToMainMenu()" class="w-full mt-3 py-2.5 text-center text-xs font-bold text-slate-400 hover:text-slate-600 dark:hover:text-white uppercase tracking-wider border border-dashed border-slate-200 dark:border-slate-800 rounded-xl transition duration-200">← К выбору режимов</button>
+            <button onclick="backToMainMenu()" class="w-full pt-2 text-center text-xs font-bold text-slate-400 hover:text-slate-600 dark:hover:text-white uppercase tracking-wider transition">← Вернуться назад</button>
         </div>
 
-        <!-- ЭКРАН ОФЛАЙН: РАСПРЕДЕЛЕНИЕ КАРТ -->
         <div id="offline-distribution-screen" class="hidden w-full max-w-sm space-y-4">
             <div class="text-center">
-                <h3 id="offline-player-turn-title" class="text-lg font-black text-red-500 tracking-tight uppercase">Игрок 1, подойдите к экрану</h3>
-                <p class="text-[11px] text-slate-400 font-medium">Убедитесь, что никто не подглядывает</p>
+                <h3 id="offline-player-turn-title" class="text-lg font-black text-red-500 uppercase">Игрок 1, возьмите устройство</h3>
+                <p class="text-[11px] text-slate-400 font-medium">Спрячьте экран от других участников</p>
             </div>
-            
             <div class="card-container w-full aspect-[3/4] max-h-96">
                 <div id="offline-secret-card" class="card w-full h-full relative cursor-pointer" onclick="flipOfflineCard()">
-                    <div class="card-face absolute w-full h-full bg-slate-900 text-white p-6 rounded-3xl border-4 border-red-500 flex flex-col justify-between shadow-2xl items-center text-center">
-                        <div class="w-full border-b border-red-500/20 pb-3 text-[10px] font-black tracking-widest text-red-500">OFFLINE PASS CARD // SECRET</div>
+                    <div class="card-face absolute w-full h-full bg-slate-900 text-white p-6 rounded-3xl border-4 border-red-500 flex flex-col justify-between items-center text-center shadow-2xl">
+                        <div class="text-[10px] font-black tracking-widest text-red-500 w-full border-b border-red-500/20 pb-2">LOCAL CARD // TOP SECRET</div>
                         <div class="space-y-2">
                             <span class="text-5xl">👀</span>
-                            <h3 class="text-xl font-black uppercase tracking-tight">Нажмите, чтобы открыть</h3>
-                            <p class="text-[11px] text-slate-400 font-medium px-4">Карта покажет вашу тайную роль в этом локальном раунде</p>
+                            <h3 class="text-xl font-black uppercase">Нажмите для просмотра</h3>
                         </div>
-                        <div class="text-[9px] text-slate-500 font-bold">LOCAL ENGINE v2.0</div>
+                        <div class="text-[9px] text-slate-500 font-bold">LOCAL MODE v2.0</div>
                     </div>
-                    <div class="card-face back absolute w-full h-full bg-white dark:bg-slate-900 text-slate-900 dark:text-white p-6 rounded-3xl border-4 border-slate-200 dark:border-slate-800 flex flex-col justify-between shadow-2xl text-center items-center">
-                        <div class="w-full border-b dark:border-slate-800 pb-2 text-[10px] font-black tracking-widest text-slate-400">ВАША ЛОКАЛЬНАЯ РОЛЬ</div>
+                    <div class="card-face back absolute w-full h-full bg-white dark:bg-slate-900 text-slate-900 dark:text-white p-6 rounded-3xl border-4 border-slate-200 dark:border-slate-800 flex flex-col justify-between items-center text-center shadow-2xl">
+                        <div class="text-[10px] font-black tracking-widest text-slate-400 w-full border-b dark:border-slate-800 pb-2">ВАША ТАЙНАЯ РОЛЬ</div>
                         <div id="offline-card-face-content" class="my-auto space-y-1"></div>
-                        <div class="text-[9px] text-slate-400 font-bold uppercase tracking-wider">Кликните обратно, чтобы спрятать</div>
+                        <div class="text-[9px] text-slate-400 font-bold uppercase">Кликните обратно, чтобы скрыть</div>
                     </div>
                 </div>
             </div>
-            <button id="offline-card-confirm-btn" onclick="nextOfflinePlayerCard()" disabled class="w-full py-3.5 bg-slate-300 dark:bg-slate-800 text-slate-400 font-black rounded-xl text-xs uppercase tracking-wider transition opacity-50 cursor-not-allowed">Сначала откройте карту</button>
+            <button id="offline-card-confirm-btn" onclick="nextOfflinePlayerCard()" disabled class="w-full py-3.5 bg-slate-300 dark:bg-slate-800 text-slate-400 font-black rounded-xl text-xs uppercase transition opacity-50 cursor-not-allowed">Сначала откройте карту</button>
         </div>
 
-        <!-- ЭКРАН ОФЛАЙН: ИГРОВОЙ ЭКРАН С ТАЙМЕРОМ -->
         <div id="offline-gameplay-screen" class="hidden w-full max-w-sm bg-white dark:bg-slate-900 p-6 rounded-2xl shadow-xl border border-slate-200 dark:border-slate-800 text-center space-y-6">
             <div class="space-y-1">
-                <span class="text-[10px] font-black tracking-widest text-red-500 uppercase block">Идет локальное обсуждение</span>
-                <h2 class="text-2xl font-black">Время раунда</h2>
+                <span class="text-[10px] font-black tracking-widest text-red-500 uppercase block">Локальный раунд запущен</span>
+                <h2 class="text-2xl font-black">Время обсуждения</h2>
             </div>
-            
-            <div class="inline-flex items-center justify-center p-6 bg-slate-50 dark:bg-slate-950 border border-slate-100 dark:border-slate-800 rounded-2xl w-full">
+            <div class="inline-flex items-center justify-center p-6 bg-slate-50 dark:bg-slate-950 border dark:border-slate-800 rounded-2xl w-full">
                 <span id="offline-timer-display" class="text-5xl font-black tracking-wider bg-gradient-to-r from-red-500 to-orange-500 bg-clip-text text-transparent font-mono">05:00</span>
             </div>
-
-            <p class="text-xs text-slate-400 font-medium px-2">Задавайте вопросы. По истечении таймера начнётся голосование!</p>
+            <p class="text-xs text-slate-400 font-medium">Задавайте друг другу перекрёстные вопросы.</p>
             <div class="decor-line h-[1px] w-full"></div>
-
             <div class="space-y-2">
-                <button onclick="triggerOfflineSpyVoteScreen()" class="w-full py-3 bg-red-500 hover:bg-red-600 text-white font-black rounded-xl text-xs uppercase tracking-wider active:scale-95 transition shadow-lg shadow-red-500/10">🚨 Начать голосование досрочно</button>
-                <button onclick="quitOfflineGame()" class="w-full py-2.5 border dark:border-slate-800 text-slate-400 hover:text-red-500 text-xs font-bold uppercase tracking-wider rounded-xl transition">Завершить партию</button>
+                <button onclick="triggerOfflineSpyVoteScreen()" class="w-full py-3 bg-red-500 hover:bg-red-600 text-white font-black rounded-xl text-xs uppercase transition shadow-md">🚨 Перейти к голосованию</button>
+                <button onclick="quitOfflineGame()" class="w-full py-2.5 text-xs text-slate-400 hover:text-red-500 font-bold uppercase transition">Сбросить партию</button>
             </div>
         </div>
 
-        <!-- ЭКРАН ОФЛАЙН: ГОЛОСОВАНИЕ -->
         <div id="offline-voting-screen" class="hidden w-full max-w-md bg-white dark:bg-slate-900 p-6 rounded-2xl shadow-xl border border-slate-200 dark:border-slate-800 space-y-4">
             <div class="text-center">
-                <h2 class="text-xl font-black uppercase">Кто шпион? 🕵️‍♂️</h2>
-                <p class="text-xs text-slate-400 font-medium mt-1">Выберите игрока, против которого проголосовало большинство</p>
+                <h2 class="text-xl font-black uppercase">Голосование против Шпиона 🕵️‍♂️</h2>
+                <p class="text-xs text-slate-400 font-medium mt-1">Кликните по игроку, которого выбрало большинство</p>
             </div>
-            <div id="offline-voting-list" class="space-y-2 max-h-60 overflow-y-auto pr-1"></div>
-            
+            <div id="offline-voting-list" class="space-y-2 max-h-60 overflow-y-auto"></div>
             <div class="decor-line h-[1px] w-full"></div>
-            
-            <div class="space-y-1">
-                <label class="block text-[10px] font-bold uppercase tracking-wider text-red-500 text-center">Шпион хочет угадать слово? Введите для проверки:</label>
+            <div class="space-y-2">
+                <label class="block text-[10px] font-bold uppercase tracking-wider text-red-500 text-center">Или шпион угадал слово? Проверка ответа:</label>
                 <div class="flex gap-2">
-                    <input id="offline-spy-guess-input" type="text" placeholder="Загаданный предмет/место..." class="flex-1 px-3 py-2 bg-red-500/5 border border-red-500/20 rounded-xl text-xs focus:outline-none text-slate-900 dark:text-white font-bold">
-                    <button onclick="triggerOfflineSpyGuessSubmit()" class="px-4 bg-gradient-to-r from-red-500 to-orange-500 text-white font-black rounded-xl text-xs active:scale-95 transition">💥 Ответ</button>
+                    <input id="offline-spy-guess-input" type="text" placeholder="Секретное слово..." class="flex-1 px-3 py-2 bg-red-500/5 border border-red-500/20 rounded-xl text-xs font-bold focus:outline-none">
+                    <button onclick="triggerOfflineSpyGuessSubmit()" class="px-4 bg-gradient-to-r from-red-500 to-orange-500 text-white font-black rounded-xl text-xs transition">Проверить</button>
                 </div>
             </div>
         </div>
 
-        <!-- ОНЛАЙН ЭКРАНЫ -->
         <div id="online-lobby-screen" class="hidden w-full max-w-sm bg-white dark:bg-slate-900 p-6 rounded-2xl shadow-xl border border-slate-200 dark:border-slate-800 space-y-4">
             <div class="text-center space-y-1">
                 <p class="text-[10px] font-extrabold tracking-widest text-slate-400 uppercase">Шифр доступа к комнате</p>
                 <div class="flex items-center justify-center gap-2">
                     <span id="lobby-code-display" class="text-3xl font-black tracking-widest bg-gradient-to-r from-red-500 to-orange-500 bg-clip-text text-transparent">XXXXX</span>
-                    <button onclick="copyCode()" class="p-1.5 bg-slate-50 dark:bg-slate-950 border dark:border-slate-800 rounded-lg text-xs active:scale-90 transition">📋</button>
+                    <button onclick="copyCode()" class="p-1.5 bg-slate-50 dark:bg-slate-950 border dark:border-slate-800 rounded-lg text-xs transition">📋</button>
                 </div>
-                <div id="copy-toast" class="text-[9px] text-emerald-500 font-bold uppercase opacity-0 transition duration-300">Код успешно скопирован!</div>
+                <div id="copy-toast" class="text-[9px] text-emerald-500 font-bold uppercase opacity-0 transition duration-300">Успешно скопировано!</div>
             </div>
-
             <div class="border-t border-b border-slate-100 dark:border-slate-800 py-3 space-y-2">
-                <div id="lobby-players-count" class="text-xs font-bold text-slate-400">В комнате: 0 участников</div>
-                <div id="lobby-players-list" class="max-h-40 overflow-y-auto space-y-1.5 pr-1"></div>
+                <div id="lobby-players-count" class="text-xs font-bold text-slate-400">Участников: 0</div>
+                <div id="lobby-players-list" class="max-h-40 overflow-y-auto space-y-1.5"></div>
             </div>
-
-            <div id="host-settings-block" class="hidden space-y-2">
-                <button onclick="startGameOnline()" class="w-full py-3.5 bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 text-white font-black rounded-xl text-xs uppercase tracking-wider shadow-lg shadow-emerald-500/10 active:scale-[0.97] transition">🚀 Запустить игру в сеть</button>
+            <div id="host-settings-block" class="hidden">
+                <button onclick="startGameOnline()" class="w-full py-3.5 bg-gradient-to-r from-emerald-500 to-teal-500 text-white font-black rounded-xl text-xs uppercase tracking-wider shadow-lg transition">🚀 Запустить игру</button>
             </div>
-
             <div id="player-waiting-block" class="hidden text-center py-3 bg-slate-50 dark:bg-slate-950 border dark:border-slate-800 rounded-xl animate-pulse">
-                <p class="text-xs font-bold text-slate-400">Главнокомандующий настраивает десант...</p>
+                <p class="text-xs font-bold text-slate-400">Ожидаем старта от создателя комнаты...</p>
             </div>
         </div>
 
         <div id="online-card-screen" class="hidden w-full max-w-sm space-y-4">
             <div class="card-container w-full aspect-[3/4] max-h-96">
                 <div id="secret-card" class="card w-full h-full relative cursor-pointer" onclick="this.classList.toggle('flipped')">
-                    <div class="card-face absolute w-full h-full bg-slate-900 text-white p-6 rounded-3xl border-4 border-red-500 flex flex-col justify-between shadow-2xl items-center text-center">
-                        <div class="w-full border-b border-red-500/20 pb-3 text-[10px] font-black tracking-widest text-red-500">SECRET MATERIAL // TOP PRIORITY</div>
+                    <div class="card-face absolute w-full h-full bg-slate-900 text-white p-6 rounded-3xl border-4 border-red-500 flex flex-col justify-between items-center text-center shadow-2xl">
+                        <div class="text-[10px] font-black tracking-widest text-red-500 w-full border-b border-red-500/20 pb-3">SECRET MATERIAL // ONLINE</div>
                         <div class="space-y-2">
                             <span class="text-5xl">🕵️‍♂️</span>
-                            <h3 class="text-xl font-black uppercase tracking-tight">Ваш секретный пакет</h3>
-                            <p class="text-[11px] text-slate-400 font-medium px-4">Нажмите на карту, чтобы перевернуть её и узнать свою секретную директиву</p>
+                            <h3 class="text-xl font-black uppercase">Ваша директива</h3>
+                            <p class="text-[11px] text-slate-400 font-medium px-4">Нажмите, чтобы перевернуть карту</p>
                         </div>
-                        <div class="text-[9px] text-slate-500 font-bold">SPYFALL ENGINE v2.0</div>
+                        <div class="text-[9px] text-slate-500 font-bold">SPYFALL ENGINE</div>
                     </div>
-                    <div class="card-face back absolute w-full h-full bg-white dark:bg-slate-900 text-slate-900 dark:text-white p-6 rounded-3xl border-4 border-slate-200 dark:border-slate-800 flex flex-col justify-between shadow-2xl text-center items-center">
-                        <div class="w-full border-b dark:border-slate-800 pb-2 text-[10px] font-black tracking-widest text-slate-400">ВАША СЕКРЕТНАЯ РОЛЬ</div>
+                    <div class="card-face back absolute w-full h-full bg-white dark:bg-slate-900 text-slate-900 dark:text-white p-6 rounded-3xl border-4 border-slate-200 dark:border-slate-800 flex flex-col justify-between items-center text-center shadow-2xl">
+                        <div class="text-[10px] font-black tracking-widest text-slate-400 w-full border-b dark:border-slate-800 pb-2">СЕКРЕТНЫЕ ДАННЫЕ</div>
                         <div id="secret-card-face" class="my-auto space-y-1"></div>
-                        <div class="text-[9px] text-slate-400 font-bold uppercase tracking-wider">Кликните, чтобы спрятать роль</div>
+                        <div class="text-[9px] text-slate-400 font-bold uppercase">Нажмите обратно для защиты данных</div>
                     </div>
                 </div>
             </div>
-            <button onclick="confirmCardReadOnline()" class="w-full py-3.5 bg-slate-900 dark:bg-white text-white dark:text-slate-950 font-black rounded-xl text-xs uppercase tracking-wider shadow-lg active:scale-95 transition">В Бой! Я всё запомнил 🛠️</button>
+            <button onclick="confirmCardReadOnline()" class="w-full py-3.5 bg-slate-900 dark:bg-white text-white dark:text-slate-950 font-black rounded-xl text-xs uppercase transition">В бой! Я всё понял 🛠️</button>
         </div>
 
         <div id="game-screen-online" class="hidden w-full max-w-md bg-white dark:bg-slate-900 p-5 rounded-2xl shadow-xl border border-slate-200 dark:border-slate-800 space-y-4">
             <div class="flex justify-between items-center bg-slate-50 dark:bg-slate-950 p-3 rounded-xl border dark:border-slate-800">
                 <div>
-                    <span class="block text-[9px] font-bold text-slate-400 uppercase tracking-widest">Текущая фаза:</span>
-                    <span id="game-round-title" class="text-xs font-black text-indigo-500">Раунд 1 | Ход 1</span>
+                    <span class="block text-[9px] font-bold text-slate-400 uppercase">Текущая фаза:</span>
+                    <span id="game-round-title" class="text-xs font-black text-indigo-500">Загрузка...</span>
                 </div>
                 <div class="text-right">
-                    <span class="block text-[9px] font-bold text-slate-400 uppercase tracking-widest">Твоя памятка:</span>
-                    <span id="game-my-loc" class="text-xs font-black text-emerald-500" onclick="showSecretCardAgain()">Посмотреть</span>
+                    <span class="block text-[9px] font-bold text-slate-400 uppercase">Слово раунда:</span>
+                    <span id="game-my-loc" class="text-xs font-black text-emerald-500 cursor-pointer underline" onclick="showSecretCardAgain()">Посмотреть</span>
                 </div>
             </div>
-
             <div class="space-y-1.5">
-                <label class="block text-[10px] font-bold uppercase tracking-wider text-slate-400">Цепочка ассоциаций текущего круга:</label>
+                <label class="block text-[10px] font-bold uppercase tracking-wider text-slate-400">История слов текущего круга:</label>
                 <div id="chat-messages" class="h-44 overflow-y-auto border dark:border-slate-800 bg-slate-50 dark:bg-slate-950 rounded-xl p-2.5 space-y-2 text-xs"></div>
             </div>
-
             <div class="space-y-2 pt-1">
-                <div id="chat-turn-indicator" class="text-[11px] font-bold text-center py-1">Ожидание...</div>
+                <div id="chat-turn-indicator" class="text-[11px] font-bold text-center py-1 rounded">Определение хода...</div>
                 <div class="flex gap-2">
-                    <input id="chat-input" type="text" placeholder="Ждем вашей очереди..." disabled class="flex-1 px-4 py-3 bg-slate-50 dark:bg-slate-950 border dark:border-slate-800 rounded-xl text-xs focus:outline-none focus:border-indigo-500 font-bold transition disabled:opacity-50">
-                    <button onclick="sendWordOnline()" class="px-4 bg-indigo-600 hover:bg-indigo-700 text-white font-black rounded-xl text-xs active:scale-95 transition shadow-md shadow-indigo-600/10">ОК</button>
+                    <input id="chat-input" type="text" placeholder="Ждём очередь..." disabled class="flex-1 px-4 py-3 bg-slate-50 dark:bg-slate-950 border dark:border-slate-800 rounded-xl text-xs font-bold focus:outline-none focus:border-indigo-500 transition disabled:opacity-50">
+                    <button onclick="sendWordOnline()" class="px-5 bg-indigo-600 hover:bg-indigo-700 text-white font-black rounded-xl text-xs transition">ОК</button>
                 </div>
             </div>
-
             <div id="spy-guess-area" class="hidden border-t pt-3 border-slate-100 dark:border-slate-800 space-y-2">
-                <label class="block text-[10px] font-bold uppercase tracking-wider text-red-500 text-center">Вы поняли секретное слово? Введите его для досрочной победы:</label>
+                <label class="block text-[10px] font-bold uppercase tracking-wider text-red-500 text-center">Выкупили слово? Перехватите победу досрочно:</label>
                 <div class="flex gap-2">
-                    <input id="spy-guess-input" type="text" placeholder="Название слова..." class="flex-1 px-3 py-2 bg-red-500/5 border border-red-500/20 rounded-xl text-xs focus:outline-none text-slate-900 dark:text-white font-bold">
-                    <button onclick="triggerSpyConfirmModal('normal')" class="px-4 bg-gradient-to-r from-red-500 to-red-600 text-white font-black rounded-xl text-xs active:scale-95 transition">💥 Ответ</button>
+                    <input id="spy-guess-input" type="text" placeholder="Ваша догадка..." class="flex-1 px-3 py-2 bg-red-500/5 border border-red-500/20 rounded-xl text-xs font-bold focus:outline-none">
+                    <button onclick="triggerSpyConfirmModal('normal')" class="px-4 bg-red-500 text-white font-black rounded-xl text-xs transition">Ответить</button>
                 </div>
             </div>
         </div>
@@ -289,59 +251,55 @@
             <div id="voting-content-area" class="space-y-4">
                 <div id="voting-players-list" class="space-y-2"></div>
                 <div id="spy-voting-guess-area" class="hidden border-t pt-3 border-slate-200 dark:border-slate-800 space-y-1.5">
-                    <label class="block text-[10px] font-bold uppercase tracking-wider text-red-500 text-center">Выкупили? Есть шанс спастись! Угадайте слово:</label>
+                    <label class="block text-[10px] font-bold uppercase tracking-wider text-red-500 text-center">Шанс спастись! Назовите загаданное слово:</label>
                     <div class="flex gap-2">
-                        <input id="spy-voting-guess-input" type="text" placeholder="Ваша последняя попытка..." class="flex-1 px-3 py-2 bg-red-500/5 border border-red-500/20 rounded-xl text-xs focus:outline-none text-slate-900 dark:text-white font-bold">
-                        <button onclick="triggerSpyConfirmModal('voting')" class="px-3 bg-gradient-to-r from-red-500 to-orange-500 text-white font-black rounded-xl text-xs active:scale-95 transition">Ответить 💥</button>
+                        <input id="spy-voting-guess-input" type="text" placeholder="Ваш вариант..." class="flex-1 px-3 py-2 bg-red-500/5 border border-red-500/20 rounded-xl text-xs font-bold focus:outline-none">
+                        <button onclick="triggerSpyConfirmModal('voting')" class="px-4 bg-gradient-to-r from-red-500 to-orange-500 text-white font-black rounded-xl text-xs transition">Отправить</button>
                     </div>
                 </div>
             </div>
-            <div id="voting-wait-msg" class="hidden text-center py-8 space-y-2">
-                <div class="text-sm font-bold text-slate-400 animate-pulse">Голос учтён! Ждём остальных...</div>
+            <div id="voting-wait-msg" class="hidden text-center py-8">
+                <div class="text-sm font-bold text-slate-400 animate-pulse">Голос учтён! Ждем остальных...</div>
             </div>
         </div>
 
-        <!-- ОБЩИЙ ЭКРАН РЕЗУЛЬТАТОВ -->
         <div id="result-screen" class="hidden w-full max-w-sm bg-white dark:bg-slate-900 p-6 rounded-2xl shadow-xl border border-slate-200 dark:border-slate-800 text-center space-y-5">
-            <h2 class="text-2xl font-black tracking-tight">Игра Окончена</h2>
+            <h2 class="text-2xl font-black uppercase">Игра Завершена</h2>
             <div id="result-box" class="p-5 rounded-2xl border-2"></div>
-            <button id="result-back-btn" onclick="backToLobby()" class="w-full py-3.5 bg-slate-900 dark:bg-white text-white dark:text-slate-950 font-black rounded-xl text-xs uppercase tracking-wider shadow-md active:scale-95 transition">Вернуться в лобби ↩️</button>
+            <button id="result-back-btn" onclick="backToLobby()" class="w-full py-3.5 bg-slate-900 dark:bg-white text-white dark:text-slate-950 font-black rounded-xl text-xs uppercase tracking-wider transition">Вернуться в лобби ↩️</button>
         </div>
 
     </main>
 
-    <!-- МОДАЛЬНОЕ ОКНО ОНЛАЙН НИЧЬЕЙ -->
-    <div id="round-alert-modal" class="fixed inset-0 bg-slate-950/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
-        <div class="bg-white dark:bg-slate-900 border dark:border-slate-800 p-6 rounded-2xl w-full max-w-xs text-center space-y-4 shadow-2xl">
-            <div class="w-12 h-12 bg-amber-500/10 text-amber-500 border border-amber-500/20 rounded-full flex items-center justify-center text-xl mx-auto animate-bounce">⚖️</div>
-            <div class="space-y-1">
-                <h4 class="text-base font-black">Ничья или Скип!</h4>
-                <p class="text-xs text-slate-400 font-medium">Большинство проголосовало за пропуск либо голоса разделились. Шпион не обнаружен.</p>
-            </div>
-            <button onclick="closeRoundModal()" class="w-full py-2.5 bg-amber-500 hover:bg-amber-600 text-slate-950 font-black rounded-xl text-xs uppercase tracking-wider active:scale-95 transition">Перейти к следующему раунду</button>
-        </div>
-    </div>
-
-    <!-- КАСТОМНОЕ ОКНО ДЛЯ КРАСИВЫХ ОШИБОК И АЛЕРТОВ (ВМЕСТО СТАНДАРТНОГО ALERT) -->
     <div id="custom-alert-modal" class="fixed inset-0 bg-slate-950/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
         <div class="bg-white dark:bg-slate-900 border dark:border-slate-800 p-5 rounded-2xl w-full max-w-xs text-center space-y-4 shadow-xl">
             <div id="custom-alert-icon" class="text-2xl">🔔</div>
             <p id="custom-alert-text" class="text-xs font-bold text-slate-700 dark:text-slate-200 px-1"></p>
-            <button onclick="closeCustomAlert()" class="w-full py-2 bg-slate-900 dark:bg-white text-white dark:text-slate-950 font-black rounded-xl text-xs uppercase tracking-wider active:scale-95 transition">Хорошо</button>
+            <button onclick="closeCustomAlert()" class="w-full py-2 bg-slate-900 dark:bg-white text-white dark:text-slate-950 font-black rounded-xl text-xs uppercase transition">Понятно</button>
         </div>
     </div>
 
-    <!-- КАСТОМНОЕ МОДАЛЬНОЕ ОКНО ПОДТВЕРЖДЕНИЯ ДЛЯ ШПИОНА -->
+    <div id="round-alert-modal" class="fixed inset-0 bg-slate-950/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+        <div class="bg-white dark:bg-slate-900 border dark:border-slate-800 p-6 rounded-2xl w-full max-w-xs text-center space-y-4 shadow-2xl">
+            <div class="w-12 h-12 bg-amber-500/10 text-amber-500 border border-amber-500/20 rounded-full flex items-center justify-center text-xl mx-auto">⚖️</div>
+            <div class="space-y-1">
+                <h4 class="text-base font-black">Ничья / Пропуск!</h4>
+                <p class="text-xs text-slate-400 font-medium">Голоса разделились или был выбран скип. Переходим к следующему этапу.</p>
+            </div>
+            <button onclick="closeRoundModal()" class="w-full py-2.5 bg-amber-500 text-slate-950 font-black rounded-xl text-xs uppercase transition">Продолжить</button>
+        </div>
+    </div>
+
     <div id="spy-confirm-modal" class="fixed inset-0 bg-slate-950/70 backdrop-blur-md z-50 flex items-center justify-center p-4 hidden">
         <div class="bg-white dark:bg-slate-900 border border-red-500/30 p-6 rounded-3xl w-full max-w-sm text-center space-y-5 shadow-2xl">
             <div class="w-14 h-14 bg-red-500/10 text-red-500 border border-red-500/20 rounded-full flex items-center justify-center text-2xl mx-auto">⚠️</div>
             <div class="space-y-2">
-                <h4 class="text-lg font-black tracking-tight text-slate-900 dark:text-white">Решающий выстрел</h4>
-                <p id="spy-modal-text-content" class="text-xs text-slate-400 font-medium px-2">Вы уверены, что хотите отправить это слово?</p>
+                <h4 class="text-lg font-black text-slate-900 dark:text-white">Решающий ответ</h4>
+                <p id="spy-modal-text-content" class="text-xs text-slate-400 font-medium px-2">Отправка этого слова завершит сессию для всех игроков.</p>
             </div>
             <div class="flex gap-3">
-                <button onclick="closeSpyConfirmModal()" class="flex-1 py-3 border dark:border-slate-800 dark:hover:bg-slate-950 font-bold rounded-xl text-xs uppercase tracking-wider active:scale-95 transition">Отмена</button>
-                <button id="spy-modal-submit-btn" onclick="executeConfirmedSpyGuess()" class="flex-1 py-3 bg-gradient-to-r from-red-500 to-orange-500 text-white font-black rounded-xl text-xs uppercase tracking-wider active:scale-95 transition shadow-lg shadow-red-500/10">Подтвердить</button>
+                <button onclick="closeSpyConfirmModal()" class="flex-1 py-3 border dark:border-slate-800 font-bold rounded-xl text-xs uppercase transition">Отмена</button>
+                <button id="spy-modal-submit-btn" onclick="executeConfirmedSpyGuess()" class="flex-1 py-3 bg-gradient-to-r from-red-500 to-orange-500 text-white font-black rounded-xl text-xs uppercase transition shadow-lg">Подтвердить</button>
             </div>
         </div>
     </div>
@@ -404,14 +362,14 @@
             document.getElementById('mode-selection-screen').classList.remove('hidden');
         }
 
-        /* --- ПОЛНЫЙ ЛОКАЛЬНЫЙ ОФФЛАЙН ДВИЖОК --- */
+        /* ЛОКАЛЬНЫЙ РЕЖИМ */
         function startOfflineGame() {
             const total = parseInt(document.getElementById('total-players').value) || 4;
             const spies = parseInt(document.getElementById('total-spies').value) || 1;
             const time = parseInt(document.getElementById('game-time').value) || 5;
 
             if (spies >= total - 1) {
-                showAlert("Шпионов слишком много для такого количества игроков!", "⚠️");
+                showAlert("Шпионов слишком много для текущего количества игроков!", "⚠️");
                 return;
             }
 
@@ -440,7 +398,7 @@
                 offlineState.players.push({
                     id: i + 1,
                     isSpy: isSpy,
-                    roleName: isSpy ? "Шпион 🕵️‍♂️" : `Мирный гражданин (Слово: ${randomWord})`
+                    roleName: isSpy ? "Шпион 🕵️‍♂️" : `Мирный гражданин`
                 });
             }
 
@@ -456,13 +414,13 @@
 
             const confirmBtn = document.getElementById('offline-card-confirm-btn');
             confirmBtn.disabled = true;
-            confirmBtn.className = "w-full py-3.5 bg-slate-300 dark:bg-slate-800 text-slate-400 font-black rounded-xl text-xs uppercase tracking-wider transition opacity-50 cursor-not-allowed";
+            confirmBtn.className = "w-full py-3.5 bg-slate-300 dark:bg-slate-800 text-slate-400 font-black rounded-xl text-xs uppercase opacity-50 cursor-not-allowed";
             confirmBtn.innerText = "Сначала откройте карту";
 
             const pData = offlineState.players[offlineState.currentDistIdx];
             const faceContent = document.getElementById('offline-card-face-content');
             if (pData.isSpy) {
-                faceContent.innerHTML = `<h3 class="text-2xl font-black text-red-500">Ты ШПИОН! 🕵️‍♂️</h3><p class="text-xs text-slate-400 mt-2">Слушай ассоциации других игроков и вычисли секретное слово!</p>`;
+                faceContent.innerHTML = `<h3 class="text-2xl font-black text-red-500">Ты ШПИОН! 🕵️‍♂️</h3><p class="text-xs text-slate-400 mt-2">Вычисли секретное слово по ассоциациям игроков.</p>`;
             } else {
                 faceContent.innerHTML = `<h3 class="text-xl font-black text-emerald-500">Мирный Житель 🏢</h3><p class="text-base font-bold mt-2">Секретное слово:<br><span class="text-2xl text-slate-900 dark:text-white font-black">${offlineState.chosenWord}</span></p>`;
             }
@@ -476,7 +434,7 @@
             const confirmBtn = document.getElementById('offline-card-confirm-btn');
             if (offlineState.cardFlipped) {
                 confirmBtn.disabled = false;
-                confirmBtn.className = "w-full py-3.5 bg-slate-900 dark:bg-white text-white dark:text-slate-950 font-black rounded-xl text-xs uppercase tracking-wider active:scale-95 transition shadow-lg";
+                confirmBtn.className = "w-full py-3.5 bg-slate-900 dark:bg-white text-white dark:text-slate-950 font-black rounded-xl text-xs uppercase active:scale-95 transition shadow-lg";
                 confirmBtn.innerText = "Я запомнил роль ✔️";
             }
         }
@@ -502,7 +460,7 @@
 
                 if (offlineState.timeLeft <= 0) {
                     clearInterval(offlineState.timerInterval);
-                    showAlert("Время вышло! Переходим к всеобщему голосованию.", "⏰");
+                    showAlert("Время вышло! Пора выбирать шпиона.", "⏰");
                     triggerOfflineSpyVoteScreen();
                 }
             }, 1000);
@@ -516,17 +474,15 @@
 
         function triggerOfflineSpyVoteScreen() {
             if (offlineState.timerInterval) clearInterval(offlineState.timerInterval);
-            
             document.getElementById('offline-gameplay-screen').classList.add('hidden');
             document.getElementById('offline-voting-screen').classList.remove('hidden');
 
             const vList = document.getElementById('offline-voting-list');
             vList.innerHTML = "";
-
             offlineState.players.forEach(p => {
-                vList.innerHTML += `<button onclick="submitOfflineVote(${p.id}, '${p.isSpy}')" class="w-full py-3 px-4 text-left font-bold border rounded-xl flex justify-between bg-slate-50 dark:bg-slate-950 hover:border-red-500 transition active:scale-95">
+                vList.innerHTML += `<button onclick="submitOfflineVote(${p.id}, '${p.isSpy}')" class="w-full py-3 px-4 text-left font-bold border rounded-xl flex justify-between bg-slate-50 dark:bg-slate-950 hover:border-red-500 transition">
                     <span>Игрок ${p.id}</span>
-                    <span class="text-red-500 font-black">Выгнать ❌</span>
+                    <span class="text-red-500 font-black">Исключить ❌</span>
                 </button>`;
             });
         }
@@ -536,17 +492,16 @@
             document.getElementById('offline-voting-screen').classList.add('hidden');
             document.getElementById('result-screen').classList.remove('hidden');
 
-            const backBtn = document.getElementById('result-back-btn');
-            backBtn.onclick = quitOfflineGame;
-            backBtn.innerText = "В главное меню ↩️";
+            document.getElementById('result-back-btn').onclick = quitOfflineGame;
+            document.getElementById('result-back-btn').innerText = "В меню ↩️";
 
             const box = document.getElementById('result-box');
             if (isSpy) {
                 box.className = "p-5 rounded-2xl border-2 border-emerald-500 bg-emerald-50 dark:bg-emerald-950/20";
-                box.innerHTML = `<h3 class="text-xl font-black text-emerald-600 mb-1">Мирные победили! 🎉</h3><p class="text-xs text-slate-500">Вы успешно раскрыли Шпиона (Игрок ${playerId}). Секретное слово: <b>${offlineState.chosenWord}</b></p>`;
+                box.innerHTML = `<h3 class="text-xl font-black text-emerald-600 mb-1">Мирные победили! 🎉</h3><p class="text-xs text-slate-500">Выгнан игрок ${playerId}, он был шпионом! Слово: <b>${offlineState.chosenWord}</b></p>`;
             } else {
                 box.className = "p-5 rounded-2xl border-2 border-red-500 bg-red-50 dark:bg-red-950/20";
-                box.innerHTML = `<h3 class="text-xl font-black text-red-600 mb-1">Шпион победил! 🕵️‍♂️</h3><p class="text-xs text-slate-500">Вы исключили мирного жителя (Игрок ${playerId}). Шпион празднует победу! Загаданное слово было: <b>${offlineState.chosenWord}</b></p>`;
+                box.innerHTML = `<h3 class="text-xl font-black text-red-600 mb-1">Шпион победил! 🕵️‍♂️</h3><p class="text-xs text-slate-500">Игрок ${playerId} был мирным гражданином. Шпион уцелел! Загаданное слово: <b>${offlineState.chosenWord}</b></p>`;
             }
         }
 
@@ -554,26 +509,25 @@
             const guessInput = document.getElementById('offline-spy-guess-input');
             const word = guessInput.value.trim();
             if (!word) {
-                showAlert("Введите слово для проверки!", "⚠️");
+                showAlert("Поле ответа не может быть пустым!", "⚠️");
                 return;
             }
 
             document.getElementById('offline-voting-screen').classList.add('hidden');
             document.getElementById('result-screen').classList.remove('hidden');
 
-            const backBtn = document.getElementById('result-back-btn');
-            backBtn.onclick = quitOfflineGame;
-            backBtn.innerText = "В главное меню ↩️";
+            document.getElementById('result-back-btn').onclick = quitOfflineGame;
+            document.getElementById('result-back-btn').innerText = "В меню ↩️";
 
             const isCorrect = (offlineState.chosenWord.toLowerCase() === word.toLowerCase());
             const box = document.getElementById('result-box');
 
             if (isCorrect) {
                 box.className = "p-5 rounded-2xl border-2 border-red-500 bg-red-50 dark:bg-red-950/20";
-                box.innerHTML = `<h3 class="text-xl font-black text-red-600 mb-1">Шпион угадал слово! 🕵️‍♂️</h3><p class="text-xs text-slate-500">Шпион совершил идеальный перехват и назвал правильное слово: <b>${offlineState.chosenWord}</b></p>`;
+                box.innerHTML = `<h3 class="text-xl font-black text-red-600 mb-1">Шпион угадал слово! 🕵️‍♂️</h3><p class="text-xs text-slate-500">Правильный ответ: <b>${offlineState.chosenWord}</b>. База раскрыта.</p>`;
             } else {
                 box.className = "p-5 rounded-2xl border-2 border-emerald-500 bg-emerald-50 dark:bg-emerald-950/20";
-                box.innerHTML = `<h3 class="text-xl font-black text-emerald-600 mb-1">Мирные победили! 🎉</h3><p class="text-xs text-slate-500">Шпион ошибся с ответом: "${word}". Секретным словом было: <b>${offlineState.chosenWord}</b></p>`;
+                box.innerHTML = `<h3 class="text-xl font-black text-emerald-600 mb-1">Мирные победили! 🎉</h3><p class="text-xs text-slate-500">Шпион назвал неверное слово: "${word}". Загаданное слово: <b>${offlineState.chosenWord}</b></p>`;
             }
             guessInput.value = "";
         }
@@ -584,23 +538,22 @@
             document.getElementById('offline-voting-screen').classList.add('hidden');
             document.getElementById('result-screen').classList.add('hidden');
             document.getElementById('mode-selection-screen').classList.remove('hidden');
-            
             document.getElementById('result-back-btn').onclick = backToLobby;
             document.getElementById('result-back-btn').innerText = "Вернуться в лобби ↩️";
         }
 
-        /* --- ОНЛАЙН РЕЖИМ (ЗАМЕНЕНЫ СТАНДАРТНЫЕ АЛЕРТЫ НА КАСТОМНЫЕ ОКНА) --- */
+        /* СЕТЕВОЙ ОНЛАЙН РЕЖИМ */
         function createLobby() {
             const nickname = document.getElementById('online-nickname').value.trim();
-            if (!nickname) return showAlert('Введите ваш позывной (никнейм)!', "👤");
+            if (!nickname) return showAlert('Пожалуйста, укажите ваш никнейм!', "👤");
             socket.emit('createRoom', { nickname: nickname });
         }
 
         function joinLobby() {
             const nickname = document.getElementById('online-nickname').value.trim();
             const code = document.getElementById('online-code-input').value.trim().toUpperCase();
-            if (!nickname) return showAlert('Введите ваш позывной (никнейм)!', "👤");
-            if (code.length !== 5) return showAlert('Код комнаты должен состоять ровно из 5 символов!', "🔑");
+            if (!nickname) return showAlert('Пожалуйста, укажите ваш никнейм!', "👤");
+            if (code.length !== 5) return showAlert('Код сессии должен содержать ровно 5 букв!', "🔑");
             socket.emit('joinRoom', { roomCode: code, nickname: nickname });
         }
 
@@ -633,11 +586,11 @@
         }
 
         socket.on('roomPlayersUpdate', (data) => {
-            document.getElementById('lobby-players-count').innerText = `В комнате: ${data.players.length} участников`;
+            document.getElementById('lobby-players-count').innerText = `Участников: ${data.players.length}`;
             const list = document.getElementById('lobby-players-list');
             list.innerHTML = "";
             data.players.forEach(p => {
-                list.innerHTML += `<div class="flex justify-between p-2 bg-white dark:bg-slate-900 border rounded-lg">
+                list.innerHTML += `<div class="flex justify-between p-2 bg-white dark:bg-slate-900 border rounded-lg text-xs font-bold">
                     <span>${p.nickname} ${p.id === myId ? '👈' : ''}</span>
                     <span class="text-[10px] text-slate-400">${p.isHost ? 'Хост' : 'Игрок'}</span>
                 </div>`;
@@ -668,20 +621,18 @@
             document.getElementById('spy-confirm-modal').classList.add('hidden');
             
             document.getElementById('chat-input').value = "";
-            const spyInputNormal = document.getElementById('spy-guess-input');
-            if (spyInputNormal) spyInputNormal.value = "";
-            const spyInputVoting = document.getElementById('spy-voting-guess-input');
-            if (spyInputVoting) spyInputVoting.value = "";
+            if (document.getElementById('spy-guess-input')) document.getElementById('spy-guess-input').value = "";
+            if (document.getElementById('spy-voting-guess-input')) document.getElementById('spy-voting-guess-input').value = "";
 
             myRoleData = data.roles.find(r => r.id === myId);
-            
             const cardFace = document.getElementById('secret-card-face');
+            
             if (myRoleData.isSpy) {
-                cardFace.innerHTML = `<h3 class="text-2xl font-black text-red-500">Ты ШПИОН! 🕵️‍♂️</h3><p class="text-xs text-slate-400 mt-2">Твоя задача — слушать чужие слова и понять, какое слово загадано!</p>`;
-                document.getElementById('game-my-loc').innerText = "Шпион (Неизвестно)";
+                cardFace.innerHTML = `<h3 class="text-2xl font-black text-red-500">Ты ШПИОН! 🕵️‍♂️</h3><p class="text-xs text-slate-400 mt-2">Слушай чужие ассоциации и назови верное слово раунда.</p>`;
+                document.getElementById('game-my-loc').innerText = "Шпион";
                 document.getElementById('spy-guess-area').classList.remove('hidden');
             } else {
-                cardFace.innerHTML = `<h3 class="text-2xl font-black text-emerald-500">Мирный Житель 🏢</h3><p class="text-sm font-bold mt-2">Секретное слово: ${data.location}</p>`;
+                cardFace.innerHTML = `<h3 class="text-2xl font-black text-emerald-500">Мирный Житель 🏢</h3><p class="text-sm font-bold mt-2">Слово: ${data.location}</p>`;
                 document.getElementById('game-my-loc').innerText = data.location;
                 document.getElementById('spy-guess-area').classList.add('hidden');
             }
@@ -706,8 +657,8 @@
             const chat = document.getElementById('chat-messages');
             chat.innerHTML = "";
             data.history.forEach(h => {
-                chat.innerHTML += `<div class="p-2 rounded-lg bg-slate-100 dark:bg-slate-950 border dark:border-slate-800">
-                    <span class="font-bold text-indigo-500">${h.nickname}:</span> <span>${h.word}</span>
+                chat.innerHTML += `<div class="p-2 rounded-lg bg-slate-100 dark:bg-slate-950 border dark:border-slate-800 font-medium">
+                    <span class="font-black text-indigo-500">${h.nickname}:</span> <span>${h.word}</span>
                 </div>`;
             });
             chat.scrollTop = chat.scrollHeight;
@@ -717,15 +668,15 @@
             const inp = document.getElementById('chat-input');
 
             if (activePlayer.id === myId) {
-                indicator.innerText = "ТВОЙ ХОД! Назови свое ассоциативное слово:";
-                indicator.className = "text-[11px] font-bold text-center py-1 bg-emerald-500/10 text-emerald-500 rounded animate-pulse";
+                indicator.innerText = "ВАШ ХОД! Введите ассоциацию:";
+                indicator.className = "text-[11px] font-bold text-center py-1 bg-emerald-500/10 text-emerald-500 animate-pulse";
                 inp.disabled = false;
-                inp.placeholder = "Введите слово...";
+                inp.placeholder = "Наберите слово...";
             } else {
-                indicator.innerText = `Ходит: ${activePlayer.nickname}...`;
-                indicator.className = "text-[11px] font-bold text-center py-1 bg-slate-500/10 text-slate-400 rounded";
+                indicator.innerText = `Ожидание хода: ${activePlayer.nickname}...`;
+                indicator.className = "text-[11px] font-bold text-center py-1 bg-slate-500/10 text-slate-400";
                 inp.disabled = true;
-                inp.placeholder = "Ожидайте своей очереди...";
+                inp.placeholder = "Пожалуйста, ждите...";
             }
         });
 
@@ -740,27 +691,22 @@
         socket.on('votingStarted', (data) => {
             document.getElementById('game-screen-online').classList.add('hidden');
             document.getElementById('round-alert-modal').classList.add('hidden');
-            
             document.getElementById('voting-wait-msg').classList.add('hidden');
             document.getElementById('voting-content-area').classList.remove('hidden');
             document.getElementById('voting-screen-online').classList.remove('hidden');
 
             const list = document.getElementById('voting-players-list');
             list.innerHTML = "";
-
             data.players.forEach(p => {
-                list.innerHTML += `<button onclick="voteForPlayer('${p.id}')" class="w-full py-3 px-4 text-left font-bold border rounded-xl flex justify-between bg-slate-50 dark:bg-slate-950 hover:border-red-500 transition active:scale-95">
+                list.innerHTML += `<button onclick="voteForPlayer('${p.id}')" class="w-full py-3 px-4 text-left font-bold border rounded-xl flex justify-between bg-slate-50 dark:bg-slate-950 hover:border-red-500 transition">
                     <span>${p.nickname} ${p.id === myId ? '(Вы)' : ''}</span>
-                    <span>❌ Выгнать</span>
+                    <span class="text-red-500 font-bold">Выгнать ❌</span>
                 </button>`;
             });
 
-            list.innerHTML += `<button onclick="voteForPlayer('skip')" class="w-full py-3 text-center text-xs font-black bg-gradient-to-r from-amber-500 to-yellow-500 hover:from-amber-600 hover:to-yellow-600 text-slate-950 rounded-xl shadow-md shadow-amber-500/20 active:scale-95 transition duration-200 uppercase tracking-wider">
-                ⏭️ Пропустить голосование (Скип)
+            list.innerHTML += `<button onclick="voteForPlayer('skip')" class="w-full py-3 text-center text-xs font-black bg-gradient-to-r from-amber-500 to-yellow-500 text-slate-950 rounded-xl shadow-md uppercase">
+                ⏭️ Пропустить раунд (Скип)
             </button>`;
-
-            const spyVotingInput = document.getElementById('spy-voting-guess-input');
-            if (spyVotingInput) spyVotingInput.value = "";
 
             if (myRoleData && myRoleData.isSpy) {
                 document.getElementById('spy-voting-guess-area').classList.remove('hidden');
@@ -784,12 +730,12 @@
             }
 
             if (!wordToCheck) {
-                showAlert('Введите название слова!', "⚠️");
+                showAlert('Введите вариант ответа!', "⚠️");
                 return;
             }
 
             activeSpyGuessType = type;
-            document.getElementById('spy-modal-text-content').innerText = `Вы уверены, что хотите отправить вариант "${wordToCheck}"? Ход завершит партию для всей комнаты.`;
+            document.getElementById('spy-modal-text-content').innerText = `Вы уверены, что хотите отправить ответ "${wordToCheck}"?`;
             document.getElementById('spy-confirm-modal').classList.remove('hidden');
         }
 
@@ -807,17 +753,13 @@
             }
 
             document.getElementById('spy-confirm-modal').classList.add('hidden');
-            socket.emit('spyGuessLocation', {
-                code: roomCode,
-                location: guessWord
-            });
+            socket.emit('spyGuessLocation', { code: roomCode, location: guessWord });
             activeSpyGuessType = null;
         }
 
         socket.on('gameContinuedNextRound', (data) => {
             document.getElementById('voting-screen-online').classList.add('hidden');
-            const modal = document.getElementById('round-alert-modal');
-            modal.classList.remove('hidden');
+            document.getElementById('round-alert-modal').classList.remove('hidden');
         });
 
         function closeRoundModal() {
@@ -837,23 +779,16 @@
             const box = document.getElementById('result-box');
             if (data.status === 'citizens_win' || data.status === 'citizens_win_guess') {
                 box.className = "p-5 rounded-2xl border-2 border-emerald-500 bg-emerald-50 dark:bg-emerald-950/20";
-                box.innerHTML = `<h3 class="text-xl font-black text-emerald-600 mb-1">Мирные победили! 🎉</h3><p class="text-xs text-slate-500">${data.kickedName}. Загаданное слово: <b>${data.word}</b></p>`;
+                box.innerHTML = `<h3 class="text-xl font-black text-emerald-600 mb-1">Мирные победили! 🎉</h3><p class="text-xs text-slate-500">${data.kickedName}. Загаданное слово было: <b>${data.word}</b></p>`;
             } else {
                 box.className = "p-5 rounded-2xl border-2 border-red-500 bg-red-50 dark:bg-red-950/20";
-                box.innerHTML = `<h3 class="text-xl font-black text-red-600 mb-1">Шпион победил! 🕵️‍♂️</h3><p class="text-xs text-slate-500">${data.kickedName}. Загаданное слово: <b>${data.word}</b></p>`;
+                box.innerHTML = `<h3 class="text-xl font-black text-red-600 mb-1">Шпион победил! 🕵️‍♂️</h3><p class="text-xs text-slate-500">${data.kickedName}. Загаданное слово было: <b>${data.word}</b></p>`;
             }
         });
 
         function backToLobby() {
             document.getElementById('result-screen').classList.add('hidden');
             document.getElementById('online-lobby-screen').classList.remove('hidden');
-            if(isHost) {
-                document.getElementById('host-settings-block').classList.remove('hidden');
-                document.getElementById('player-waiting-block').classList.add('hidden');
-            } else {
-                document.getElementById('host-settings-block').classList.add('hidden');
-                document.getElementById('player-waiting-block').classList.remove('hidden');
-            }
         }
     </script>
 </body>
