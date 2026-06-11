@@ -171,22 +171,44 @@
         <button onclick="confirmCardReadOnline()" class="w-full py-3 bg-red-500 text-white font-bold rounded-xl active:scale-95 transition">Я всё понял, в игру! 👌</button>
     </div>
 
-    <div id="game-screen-online" class="hidden w-full max-w-sm bg-white/90 dark:bg-slate-900/90 backdrop-blur-md p-6 rounded-2xl shadow-xl border border-slate-200 dark:border-slate-800 text-center space-y-4 z-10">
-        <div>
-            <h2 id="game-round-title" class="text-sm font-medium text-slate-500 uppercase tracking-widest">Раунд 1</h2>
-            <div class="text-xs text-slate-400 mt-1">Локация текущей игры: <span id="game-my-loc" class="font-bold text-emerald-400">?</span></div>
+    <div id="game-screen-online" class="hidden max-w-md mx-auto h-full flex flex-col p-4">
+        <div class="flex justify-between items-center mb-2 bg-slate-900/50 p-3 rounded-xl border border-slate-800/40 shadow-sm">
+            <div>
+                <h2 id="game-round-title" class="text-sm font-black text-slate-200">Раунд 1 | Ход 1</h2>
+                <div class="text-[10px] text-slate-400 font-medium">Твоя локация: <span id="game-my-loc" class="font-bold">Загрузка...</span></div>
+            </div>
+            <button onclick="document.getElementById('online-card-screen').classList.remove('hidden'); document.getElementById('game-screen-online').classList.add('hidden');" class="px-2.5 py-1.5 bg-slate-800 border border-slate-700 text-slate-300 rounded-lg text-[10px] font-bold active:scale-95 transition">
+                📋 Роль
+            </button>
         </div>
-        <div class="text-left border border-slate-200 dark:border-slate-800 rounded-xl p-3 bg-slate-50 dark:bg-slate-950/60 flex flex-col h-64 space-y-2">
-            <div id="chat-messages" class="flex-grow overflow-y-auto space-y-1 text-xs"></div>
-            <div id="chat-turn-indicator" class="text-[11px] font-bold text-center py-1 bg-slate-500/10 text-slate-400 rounded">Очередь...</div>
-            <div class="flex space-x-1.5">
-                <input id="chat-input" type="text" placeholder="Введите ОДНО слово..." oninput="validateWordInput(this)" class="flex-grow bg-white dark:bg-slate-900 border rounded-lg p-2 text-xs focus:outline-none text-slate-900 dark:text-white font-medium">
-                <button id="chat-send-btn" disabled onclick="sendWordOnline()" class="px-3 bg-slate-300 text-slate-500 rounded-lg font-bold text-xs">Отправить</button>
+
+        <div id="chat-messages" class="flex-1 bg-white dark:bg-slate-900 rounded-2xl border border-slate-100 dark:border-slate-800/60 p-3 overflow-y-auto space-y-2 text-xs shadow-inner min-h-[250px]">
+            </div>
+
+        <div class="mt-2 space-y-2">
+            <div id="chat-turn-indicator" class="text-[11px] font-bold text-center py-1 bg-slate-500/10 text-slate-400 rounded">
+                Ожидание хода...
+            </div>
+            <div id="online-word-input-area" class="flex gap-2">
+                <input id="chat-input" oninput="validateWordInput(this)" type="text" placeholder="Ожидайте своей очереди..." disabled class="flex-1 px-3 py-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 text-xs font-medium focus:outline-none focus:border-emerald-500 dark:focus:border-emerald-500 disabled:opacity-50 transition">
+                <button id="chat-send-btn" onclick="sendWordOnline()" disabled class="px-3 bg-slate-300 text-slate-500 rounded-lg font-bold text-xs cursor-not-allowed transition">
+                    Отправить
+                </button>
             </div>
         </div>
-        <button onclick="goToVotingOnline()" class="w-full py-3.5 bg-gradient-to-r from-red-600 to-orange-600 text-white rounded-xl font-bold text-sm shadow-md active:scale-95 transition">
-            🗳️ Перейти к голосованию
-        </button>
+    </div>
+
+    <div id="round-alert-modal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm hidden transition-all duration-300">
+        <div class="w-full max-w-sm p-6 bg-slate-900 border-2 border-amber-500/40 rounded-2xl text-center shadow-2xl transform scale-95 transition-all">
+            <div class="w-12 h-12 rounded-full bg-amber-500/10 text-amber-500 flex items-center justify-center mx-auto mb-3 text-xl animate-pulse">
+                🤝
+            </div>
+            <h3 class="text-lg font-black text-white mb-1">Никто не исключён!</h3>
+            <p id="round-alert-text" class="text-xs text-slate-400 mb-4">Мнения разделились. Игра продолжается.</p>
+            <button onclick="closeRoundModal()" class="w-full py-2.5 bg-gradient-to-r from-amber-500 to-orange-500 text-white font-bold rounded-xl text-xs active:scale-95 transition shadow-md shadow-orange-500/10">
+                Продолжить обсуждение
+            </button>
+        </div>
     </div>
 
     <div id="voting-screen-online" class="hidden w-full max-w-sm bg-white/90 dark:bg-slate-900/90 backdrop-blur-md p-6 rounded-2xl shadow-xl border border-slate-200 dark:border-slate-800 space-y-4 z-10">
