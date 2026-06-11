@@ -47,16 +47,14 @@ function generateRoomCode() {
 function activateVoting(roomCode) {
     const room = rooms[roomCode];
     if (!room) return;
-    room.status = 'voting';
-    room.votingHistory = [];
-    room.votes = {};
-    if (room.votedPlayers && typeof room.votedPlayers.clear === 'function') {
-        room.votedPlayers.clear();
-    } else {
-        room.votedPlayers = new Set();
-    }
 
-    io.to(roomCode).emit('votingStarted', { players: room.players });
+    room.status = 'voting';
+    room.votes = {};        // Очищаем старые голоса перед новым голосованием
+    room.votedPlayers = [];  // Очищаем список проголосовавших
+
+    io.to(roomCode).emit('votingStarted', {
+        players: room.players.map(p => ({ id: p.id, nickname: p.nickname }))
+    });
 }
 
 function sendChatUpdate(roomCode) {
@@ -119,30 +117,47 @@ io.on('connection', (socket) => {
     });
 
     socket.on('startGame', (data) => {
-        const room = rooms[data.roomCode];
-        if (!room || room.players.length < 3) {
-            socket.emit('errorMsg', 'Для игры нужно минимум 3 игрока!');
-            return;
+        const { roomCode } = data;
+        const room = rooms[roomCode];
+        if (!room) return;
+
+        if (room.players.length < 3) {
+            return socket.emit('errorMsg', 'Для игры нужно минимум 3 игрока!');
         }
 
+        // ОБНУЛЕНИЕ ДАННЫХ ДЛЯ НОВОЙ ИГРЫ
         room.status = 'ingame';
-        room.location = onlineLocations[Math.floor(Math.random() * onlineLocations.length)];
-        
-        const spyIdx = Math.floor(Math.random() * room.players.length);
-        const roles = room.players.map((p, idx) => ({
-            id: p.id,
-            nickname: p.nickname,
-            isSpy: idx === spyIdx
-        }));
-
-        room.roles = roles;
-        room.history = [];
         room.round = 1;
         room.step = 1;
+        room.history = [];
+        room.votes = {}; // Важно! Очищаем таблицу голосов прошлых игр
+        room.votedPlayers = []; // И список проголосовавших
+
+        // Выбираем случайную локацию
+        const randomLoc = onlineLocations[Math.floor(Math.random() * onlineLocations.length)];
+        room.location = randomLoc;
+
+        // Распределяем роли (1 шпион, остальные мирные)
+        const spyIdx = Math.floor(Math.random() * room.players.length);
+        room.roles = room.players.map((p, idx) => {
+            return {
+                id: p.id,
+                nickname: p.nickname,
+                isSpy: idx === spyIdx
+            };
+        });
+
+        // Назначаем первого ходящего
         room.activePlayerIdx = Math.floor(Math.random() * room.players.length);
 
-        io.to(data.roomCode).emit('gameStarted', { roles, location: room.location });
-        sendChatUpdate(data.roomCode);
+        // Рассылаем старт игры
+        io.to(roomCode).emit('gameStarted', {
+            roles: room.roles,
+            location: room.location
+        });
+
+        // Отправляем первое обновление чата
+        sendChatUpdate(roomCode);
     });
 
     socket.on('chatWord', (data) => {
