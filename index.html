@@ -465,10 +465,6 @@
             validateWordInput(input);
         }
 
-        function goToVotingOnline() {
-            socket.emit('startVoting', { roomCode: myRoomCode });
-        }
-
         function sendVotingMessageOnline() {
             const input = document.getElementById('voting-input');
             const msg = input.value.trim();
@@ -568,9 +564,11 @@
             }
         });
 
-        socket.on('chatUpdate', (data) => {
+       socket.on('chatUpdate', (data) => {
             document.getElementById('game-round-title').innerText = `Раунд ${data.round} | Шаг ${data.step}`;
             const chatBox = document.getElementById('chat-messages');
+            
+            // ИСПРАВЛЕНИЕ: Очищаем чат и выводим ВСЕ слова по очереди, а не только последнее
             chatBox.innerHTML = data.history.map(h => `
                 <div class="py-1 border-b border-slate-100 dark:border-slate-800/40">
                     <span class="font-bold text-slate-400">${h.nickname}:</span> 
