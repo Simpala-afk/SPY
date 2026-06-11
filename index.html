@@ -3,613 +3,618 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Игра Шпион (Spyfall)</title>
+    <title>Игра Шпион (Spyfall) - Все Режимы</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <script src="/socket.io/socket.io.js"></script>
     <script>
-        tailwind.config = {
-            darkMode: 'class',
-            theme: {
-                extend: {}
-            }
-        }
+        tailwind.config = { darkMode: 'class', theme: { extend: {} } }
     </script>
     <style>
-        /* Стили для плавного 3D-переворота карточки */
         .card-container { perspective: 1000px; }
         .card { transition: transform 0.6s; transform-style: preserve-3d; }
         .card.flipped { transform: rotateY(180deg); }
         .card-face { backface-visibility: hidden; }
         .back { transform: rotateY(180deg); }
-        
-        /* Плавное появление модалок */
         .modal-active { opacity: 1; pointer-events: auto; transition: opacity 0.3s ease; }
         .modal-hidden { opacity: 0; pointer-events: none; transition: opacity 0.3s ease; }
-
-        /* Плавный переход при смене темы */
-        *, *::before, *::after {
-            transition: background-color 0.3s ease, border-color 0.3s ease, color 0.3s ease, box-shadow 0.3s ease;
-        }
-
-        /* --- АНИМАЦИИ ДЛЯ ПЛАВАЮЩИХ ФИГУР --- */
-        @keyframes float-slow-1 {
-            0% { transform: translateY(0px) rotate(0deg); }
-            50% { transform: translateY(-35px) rotate(90deg); }
-            100% { transform: translateY(0px) rotate(0deg); }
-        }
-        @keyframes float-slow-2 {
-            0% { transform: translateY(0px) translateX(0px) rotate(0deg); }
-            50% { transform: translateY(40px) translateX(20px) rotate(-120deg); }
-            100% { transform: translateY(0px) translateX(0px) rotate(0deg); }
-        }
-        @keyframes float-slow-3 {
-            0% { transform: translateY(0px) scale(1); }
-            50% { transform: translateY(-25px) scale(1.1); }
-            100% { transform: translateY(0px) scale(1); }
-        }
-
-        .anim-shape-1 { animation: float-slow-1 12s ease-in-out infinite; }
-        .anim-shape-2 { animation: float-slow-2 16s ease-in-out infinite; }
-        .anim-shape-3 { animation: float-slow-3 10s ease-in-out infinite; }
-
-        .sphere {
-            background: radial-gradient(circle at 30% 30%, #ff4500, #8b0000 60%, #3a0000);
-            box-shadow: inset -5px -5px 15px rgba(0,0,0,0.6), 0 10px 20px rgba(0,0,0,0.3);
-        }
-        .html:not(.dark) .sphere {
-            background: radial-gradient(circle at 30% 30%, #ff7f50, #dd2f00 70%, #8b0000);
-            box-shadow: inset -5px -5px 15px rgba(0,0,0,0.4), 0 10px 15px rgba(221,47,0,0.2);
-        }
-
-        .cylinder {
-            background: linear-gradient(90deg, #4f46e5 10%, #818cf8 50%, #312e81 90%);
-            box-shadow: 0 15px 25px rgba(0,0,0,0.3);
-        }
-
-        .cube-3d {
-            background: linear-gradient(135deg, #06b6d4 0%, #0891b2 40%, #0db7d4 41%, #044e59 100%);
-            box-shadow: inset 2px 2px 5px rgba(255,255,255,0.4), 0 10px 20px rgba(0,0,0,0.3);
-        }
+        *, *::before, *::after { transition: background-color 0.3s ease, border-color 0.3s ease, color 0.3s ease, box-shadow 0.3s ease; }
     </style>
 </head>
 <body class="bg-slate-100 text-slate-900 dark:bg-slate-950 dark:text-white min-h-screen flex items-center justify-center p-4 select-none relative overflow-x-hidden">
 
-    <div class="absolute inset-0 pointer-events-none overflow-hidden z-0 hidden lg:block">
-        <div class="absolute left-[5%] top-[15%] w-32 h-32 rounded-full sphere anim-shape-1"></div>
-        <div class="absolute left-[8%] bottom-[20%] w-16 h-36 rounded-t-xl rounded-b-xl cylinder anim-shape-2"></div>
-        <div class="absolute left-[16%] top-[45%] w-20 h-20 rounded-xl cube-3d anim-shape-3"></div>
-        <div class="absolute right-[14%] top-[18%] w-32 h-14 rounded-l-xl rounded-r-xl cylinder anim-shape-3 rotate-45"></div>
-        <div class="absolute right-[6%] top-[40%] w-28 h-28 rounded-2xl cube-3d anim-shape-1"></div>
-        <div class="absolute right-[10%] bottom-[15%] w-20 h-20 rounded-full sphere anim-shape-2"></div>
-    </div>
-
     <button onclick="toggleTheme()" class="absolute top-4 right-4 p-3 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-md active:scale-95 z-40">
-        <svg id="theme-sun" class="w-6 h-6 text-amber-500 hidden dark:block" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364-6.364l-.707.707M6.343 17.657l-.707.707m12.728 0l-.707-.707M6.343 6.343l-.707-.707M12 8a4 4 0 100 8 4 4 0 000-8z"/>
-        </svg>
-        <svg id="theme-moon" class="w-6 h-6 text-slate-700 block dark:hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"/>
-        </svg>
+        <svg id="theme-sun" class="w-6 h-6 text-amber-500 hidden dark:block" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364-6.364l-.707.707M6.343 17.657l-.707.707m12.728 0l-.707-.707M6.343 6.343l-.707-.707M12 8a4 4 0 100 8 4 4 0 000-8z"/></svg>
+        <svg id="theme-moon" class="w-6 h-6 text-slate-700 block dark:hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"/></svg>
     </button>
 
-    <div id="setup-screen" class="w-full max-w-sm bg-white/90 dark:bg-slate-900/90 backdrop-blur-md p-6 rounded-2xl shadow-xl dark:shadow-2xl border border-slate-200 dark:border-slate-800/80 space-y-5 z-10">
-        <div class="text-center">
-            <h1 class="text-3xl font-black tracking-wider text-transparent bg-clip-text bg-gradient-to-r from-red-500 to-orange-500 dark:from-red-500 dark:to-orange-400">ШПИОН</h1>
-            <p class="text-xs text-slate-500 dark:text-slate-400 mt-1 uppercase tracking-widest">Локальная игра на дедукцию</p>
+    <div id="mode-selection-screen" class="w-full max-w-sm bg-white/90 dark:bg-slate-900/90 backdrop-blur-md p-6 rounded-2xl shadow-xl border border-slate-200 dark:border-slate-800 space-y-6 z-10 text-center">
+        <div>
+            <h1 class="text-4xl font-black tracking-wider text-transparent bg-clip-text bg-gradient-to-r from-red-500 to-orange-500">ШПИОН</h1>
+            <p class="text-xs text-slate-500 uppercase tracking-widest mt-1 font-bold">Выберите режим игры</p>
         </div>
+        <div class="space-y-3">
+            <button onclick="switchMode('offline')" class="w-full py-4 bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white font-black rounded-xl shadow-md active:scale-95 transition flex flex-col items-center justify-center">
+                <span>📱 Оффлайн режим</span>
+                <span class="text-[10px] font-normal opacity-80 mt-0.5">Играем на одном телефоне, передавая его из рук в руки</span>
+            </button>
+            <button onclick="switchMode('online')" class="w-full py-4 bg-gradient-to-r from-red-500 to-orange-600 hover:from-red-600 hover:to-orange-700 text-white font-black rounded-xl shadow-md active:scale-95 transition flex flex-col items-center justify-center">
+                <span>🌐 Онлайн режим</span>
+                <span class="text-[10px] font-normal opacity-80 mt-0.5">Каждый играет со своего смартфона через интернет</span>
+            </button>
+        </div>
+    </div>
 
+    <div id="setup-screen-offline" class="hidden w-full max-w-sm bg-white/90 dark:bg-slate-900/90 backdrop-blur-md p-6 rounded-2xl shadow-xl border border-slate-200 dark:border-slate-800 space-y-4 z-10">
+        <button onclick="backToMainMenu()" class="text-xs font-bold text-slate-400 hover:text-slate-600 dark:hover:text-white transition">⬅️ Назад в меню</button>
+        <div class="text-center">
+            <h1 class="text-2xl font-black text-slate-800 dark:text-white">Настройки Оффлайн</h1>
+        </div>
+        <div class="space-y-3">
+            <div>
+                <div class="flex justify-between text-sm font-medium mb-1"><span class="text-slate-600 dark:text-slate-400">Игроки:</span><span id="player-count-val-off" class="font-bold text-red-500">4</span></div>
+                <input id="player-count-off" type="range" min="3" max="12" value="4" oninput="document.getElementById('player-count-val-off').innerText=this.value" class="w-full h-2 bg-slate-200 dark:bg-slate-800 rounded-lg appearance-none cursor-pointer accent-red-500">
+            </div>
+            <div>
+                <div class="flex justify-between text-sm font-medium mb-1"><span class="text-slate-600 dark:text-slate-400">Шпионы:</span><span id="spy-count-val-off" class="font-bold text-red-500">1</span></div>
+                <input id="spy-count-off" type="range" min="1" max="3" value="1" oninput="document.getElementById('spy-count-val-off').innerText=this.value" class="w-full h-2 bg-slate-200 dark:bg-slate-800 rounded-lg appearance-none cursor-pointer accent-red-500">
+            </div>
+            <div>
+                <div class="flex justify-between text-sm font-medium mb-1"><span class="text-slate-600 dark:text-slate-400">Время раунда:</span><span id="timer-val-off" class="font-bold text-red-500">5 мин</span></div>
+                <input id="timer-count-off" type="range" min="1" max="15" value="5" oninput="document.getElementById('timer-val-off').innerText=this.value + ' мин'" class="w-full h-2 bg-slate-200 dark:bg-slate-800 rounded-lg appearance-none cursor-pointer accent-red-500">
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-slate-600 dark:text-slate-400 mb-1">Тематика локаций:</label>
+                <select id="theme-select-off" class="w-full bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-xl p-2.5 text-sm font-bold text-slate-800 dark:text-white focus:outline-none">
+                    <option value="all">Все локации (Вместе)</option>
+                    <option value="base">Базовая подборка</option>
+                    <option value="hollywood">Голливуд / Фильмы</option>
+                    <option value="corporation">Корпорация / Офис</option>
+                    <option value="chill">На чиле / Курорт</option>
+                </select>
+            </div>
+            <button onclick="showLocationsModal()" class="w-full py-2 border border-dashed border-slate-300 dark:border-slate-700 hover:border-red-500 rounded-xl text-xs font-bold text-slate-500 hover:text-red-500 transition">🗺️ Посмотреть список всех локаций</button>
+            <button onclick="startOfflineGame()" class="w-full py-3.5 bg-gradient-to-r from-blue-500 to-indigo-600 text-white rounded-xl font-black shadow-md active:scale-95 transition">Раздать роли (Поехали) 🚀</button>
+        </div>
+    </div>
+
+    <div id="card-screen-offline" class="hidden w-full max-w-sm text-center space-y-4 z-10">
+        <h2 id="player-turn-title-off" class="text-xl font-black text-slate-800 dark:text-white">Игрок 1, возьми телефон</h2>
+        <div class="card-container h-64 w-full cursor-pointer" onclick="document.getElementById('card-off').classList.toggle('flipped')">
+            <div id="card-off" class="card relative w-full h-full shadow-xl">
+                <div class="card-face absolute inset-0 bg-white dark:bg-slate-900 rounded-2xl flex flex-col items-center justify-center p-6 border border-slate-200 dark:border-slate-800 text-center">
+                    <p class="text-lg font-bold text-blue-500">Нажми, чтобы открыть секретную карту 👁️</p>
+                </div>
+                <div id="card-face-content-off" class="card-face back absolute inset-0 rounded-2xl flex flex-col items-center justify-center p-6 text-center border-2"></div>
+            </div>
+        </div>
+        <p class="text-xs text-slate-400">Посмотрел? Закрой карту и передай телефон следующему</p>
+        <button onclick="nextOfflinePlayer()" class="w-full py-3 bg-indigo-600 text-white font-bold rounded-xl active:scale-95 transition">Я понял, следующий игрок! 👌</button>
+    </div>
+
+    <div id="game-screen-offline" class="hidden w-full max-w-sm bg-white/90 dark:bg-slate-900/90 backdrop-blur-md p-6 rounded-2xl shadow-xl border border-slate-200 dark:border-slate-800 text-center space-y-5 z-10">
+        <div>
+            <h2 class="text-sm font-medium text-slate-400 uppercase tracking-widest">Идёт бурное обсуждение...</h2>
+            <div id="timer-display-off" class="text-6xl font-black tracking-wider text-slate-800 dark:text-white font-mono mt-2 animate-pulse">05:00</div>
+        </div>
+        <div class="p-4 bg-slate-50 dark:bg-slate-950/40 rounded-xl border border-slate-200 dark:border-slate-800 text-left space-y-1">
+            <div class="text-xs text-slate-400 uppercase tracking-wider font-bold">Шпаргалка для игроков:</div>
+            <div class="text-xs text-slate-600 dark:text-slate-300">Мирные жители должны найти шпиона вопросами. Шпион должен понять локацию или дотянуть время!</div>
+        </div>
+        <div class="flex space-x-2">
+            <button onclick="triggerCustomConfirm()" class="w-1/2 py-3 bg-slate-200 dark:bg-slate-800 font-bold rounded-xl text-xs text-slate-600 dark:text-slate-300 active:scale-95 transition">Закончить игру 🛑</button>
+            <button onclick="showLocationsModal()" class="w-1/2 py-3 bg-indigo-600 font-bold rounded-xl text-xs text-white active:scale-95 transition shadow-md">🗺️ Список локаций</button>
+        </div>
+    </div>
+
+
+    <div id="setup-screen-online" class="hidden w-full max-w-sm bg-white/90 dark:bg-slate-900/90 backdrop-blur-md p-6 rounded-2xl shadow-xl border border-slate-200 dark:border-slate-800 space-y-5 z-10">
+        <button onclick="backToMainMenu()" class="text-xs font-bold text-slate-400 hover:text-slate-600 dark:hover:text-white transition">⬅️ Назад в меню</button>
+        <div class="text-center">
+            <h1 class="text-2xl font-black text-slate-800 dark:text-white">Сетевой Онлайн</h1>
+            <p class="text-[10px] text-slate-400 uppercase tracking-widest mt-0.5 font-bold">Каждый со своего смартфона</p>
+        </div>
         <div class="space-y-4">
             <div>
-                <label class="block text-sm font-medium text-slate-600 dark:text-slate-400 mb-1">Количество игроков:</label>
-                <input id="players" type="number" value="5" min="3" class="w-full bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-xl p-3 text-slate-900 dark:text-white font-bold focus:outline-none focus:border-orange-500 transition">
+                <label class="block text-sm font-medium text-slate-600 dark:text-slate-400 mb-1">Твой никнейм:</label>
+                <input id="online-nickname" type="text" placeholder="Введите имя..." maxlength="15" oninput="validateMenuOnline()" class="w-full bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-xl p-3 text-slate-900 dark:text-white font-bold focus:outline-none focus:border-red-500">
             </div>
-            
-            <div>
-                <label class="block text-sm font-medium text-slate-600 dark:text-slate-400 mb-1">Количество шпионов:</label>
-                <input id="spies" type="number" value="1" min="1" class="w-full bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-xl p-3 text-slate-900 dark:text-white font-bold focus:outline-none focus:border-orange-500 transition">
+            <div class="p-3 bg-slate-100 dark:bg-slate-800/40 rounded-xl border border-slate-200 dark:border-slate-800/60">
+                <button id="btn-create-lobby" disabled onclick="createLobby()" class="w-full py-3.5 bg-slate-300 dark:bg-slate-700 text-slate-500 dark:text-slate-400 rounded-xl font-bold transition-all cursor-not-allowed">
+                    ➕ Создать новую комнату
+                </button>
             </div>
-
-            <div>
-                <label class="block text-sm font-medium text-slate-600 dark:text-slate-400 mb-2">Наборы локаций:</label>
-                <div id="themes" class="space-y-2 bg-slate-50 dark:bg-slate-800/40 p-3 rounded-xl border border-slate-200 dark:border-slate-800/60">
-                    <div class="flex items-center justify-between group">
-                        <label class="flex items-center space-x-3 cursor-pointer text-slate-800 dark:text-slate-200 flex-grow py-1">
-                            <input type="checkbox" checked value="base" class="w-5 h-5 rounded text-orange-500 bg-white dark:bg-slate-800 border-slate-300 dark:border-slate-700 focus:ring-0">
-                            <span class="text-sm font-medium">🏙️ Базовый набор</span>
-                        </label>
-                        <button type="button" onclick="event.preventDefault(); previewTheme('base')" class="p-1 text-slate-400 hover:text-orange-500 dark:hover:text-orange-400 transition">
-                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
-                        </button>
-                    </div>
-
-                    <div class="flex items-center justify-between group">
-                        <label class="flex items-center space-x-3 cursor-pointer text-slate-800 dark:text-slate-200 flex-grow py-1">
-                            <input type="checkbox" value="travel" class="w-5 h-5 rounded text-orange-500 bg-white dark:bg-slate-800 border-slate-300 dark:border-slate-700 focus:ring-0">
-                            <span class="text-sm font-medium">✈️ Путешествия</span>
-                        </label>
-                        <button type="button" onclick="event.preventDefault(); previewTheme('travel')" class="p-1 text-slate-400 hover:text-orange-500 dark:hover:text-orange-400 transition">
-                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
-                        </button>
-                    </div>
-
-                    <div class="flex items-center justify-between group">
-                        <label class="flex items-center space-x-3 cursor-pointer text-slate-800 dark:text-slate-200 flex-grow py-1">
-                            <input type="checkbox" value="hollywood" class="w-5 h-5 rounded text-orange-500 bg-white dark:bg-slate-800 border-slate-300 dark:border-slate-700 focus:ring-0">
-                            <span class="text-sm font-medium">🎬 Поп-культура и кино</span>
-                        </label>
-                        <button type="button" onclick="event.preventDefault(); previewTheme('hollywood')" class="p-1 text-slate-400 hover:text-orange-500 dark:hover:text-orange-400 transition">
-                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
-                        </button>
-                    </div>
+            <div class="p-3 bg-slate-100 dark:bg-slate-800/40 rounded-xl border border-slate-200 dark:border-slate-800/60 space-y-2">
+                <label class="block text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Или войти к другу:</label>
+                <div class="flex space-x-2">
+                    <input id="online-code-input" type="text" placeholder="КОД" maxlength="5" oninput="this.value = this.value.toUpperCase(); validateMenuOnline();" class="w-1/2 bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-xl p-3 text-center text-slate-900 dark:text-white font-black tracking-widest focus:outline-none focus:border-red-500">
+                    <button id="btn-join-lobby" disabled onclick="joinLobby()" class="w-1/2 py-3 bg-slate-300 dark:bg-slate-700 text-slate-500 dark:text-slate-400 rounded-xl font-bold transition-all text-sm cursor-not-allowed">
+                        🚪 Войти по коду
+                    </button>
                 </div>
             </div>
-
-            <div>
-                <label class="block text-sm font-medium text-slate-600 dark:text-slate-400 mb-1">Таймер обсуждения (минут):</label>
-                <input id="time" type="number" placeholder="Без времени" min="1" max="15" class="w-full bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-xl p-3 text-slate-900 dark:text-white font-bold focus:outline-none focus:border-orange-500 transition">
-            </div>
         </div>
-
-        <button onclick="startGame()" class="w-full py-4 bg-gradient-to-r from-red-500 to-orange-500 hover:from-red-600 hover:to-orange-600 rounded-xl font-bold text-lg text-white shadow-lg shadow-orange-500/20 active:scale-95 transition-transform duration-75">
-            Запустить раздачу
-        </button>
     </div>
 
-    <div id="distribute-screen" class="hidden w-full max-w-sm flex flex-col items-center z-10">
-        <div class="text-center mb-6">
-            <h2 id="player-title" class="text-3xl font-extrabold tracking-wide text-slate-800 dark:text-slate-200">Игрок 1</h2>
-            <p class="text-xs text-slate-500 dark:text-slate-400 mt-1 uppercase tracking-widest">Передайте телефон этому игроку</p>
+    <div id="online-lobby-screen" class="hidden w-full max-w-sm bg-white/90 dark:bg-slate-900/90 backdrop-blur-md p-6 rounded-2xl shadow-xl border border-slate-200 dark:border-slate-800 space-y-5 z-10">
+        <div class="text-center border-b border-slate-200 dark:border-slate-800 pb-3">
+            <p class="text-xs text-slate-500 dark:text-slate-400 uppercase tracking-widest font-semibold">Код твоей комнаты</p>
+            <div onclick="copyCode()" class="inline-flex items-center space-x-2 cursor-pointer bg-slate-100 dark:bg-slate-800/60 hover:bg-slate-200 px-4 py-1.5 rounded-xl mt-1.5 select-all active:scale-95 transition">
+                <h2 id="lobby-code-display" class="text-4xl font-black tracking-widest text-red-500 font-mono">XXXXX</h2>
+            </div>
+            <p id="copy-toast" class="text-[11px] text-emerald-500 font-bold mt-1 opacity-0 transition-opacity">📋 Код скопирован!</p>
+            <p id="lobby-players-count" class="text-xs text-slate-400 font-medium">В комнате: 1 участников</p>
         </div>
+        <div>
+            <label class="block text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-2">Игроки в лобби:</label>
+            <div id="lobby-players-list" class="space-y-1.5 max-h-40 overflow-y-auto bg-slate-50 dark:bg-slate-950/50 border border-slate-200 p-2 rounded-xl"></div>
+        </div>
+        <div id="host-settings-block" class="pt-2 border-t border-slate-200 dark:border-slate-800 hidden">
+            <button onclick="startGameOnline()" class="w-full py-3.5 bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 text-white rounded-xl font-bold shadow-md active:scale-95 transition">
+                Раздать роли и Начать 🚀
+            </button>
+        </div>
+        <div id="player-waiting-block" class="pt-4 border-t border-slate-200 dark:border-slate-800 text-center space-y-2 hidden">
+            <p class="text-sm text-slate-400 font-medium animate-pulse">⏳ Ожидаем, пока Хост запустит игру...</p>
+        </div>
+    </div>
 
-        <div class="card-container h-80 w-full max-w-[320px] cursor-pointer" onclick="toggleCard()">
-            <div id="card" class="card relative w-full h-full shadow-xl dark:shadow-2xl">
+    <div id="online-card-screen" class="hidden w-full max-w-sm text-center space-y-5 z-10">
+        <h2 class="text-2xl font-black text-slate-800 dark:text-white">Твоя секретная карта</h2>
+        <div class="card-container h-64 w-full cursor-pointer" onclick="document.getElementById('secret-card').classList.toggle('flipped')">
+            <div id="secret-card" class="card relative w-full h-full shadow-xl">
                 <div class="card-face absolute inset-0 bg-white dark:bg-slate-900 rounded-2xl flex flex-col items-center justify-center p-6 border border-slate-200 dark:border-slate-800 text-center">
-                    <div class="w-16 h-16 bg-slate-100 dark:bg-slate-800 rounded-full flex items-center justify-center mb-4">
-                        <svg class="w-8 h-8 text-slate-600 dark:text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
-                    </div>
-                    <p class="text-lg font-bold text-slate-800 dark:text-slate-200">Нажми на карту</p>
-                    <p class="text-xs text-slate-500 dark:text-slate-400 mt-2">чтобы узнать свой секрет</p>
+                    <p class="text-lg font-bold text-red-500">Нажми, чтобы открыть карту 👁️</p>
                 </div>
-                <div id="card-back" class="card-face back absolute inset-0 rounded-2xl flex flex-col items-center justify-center p-6 text-center border-2">
-                    <div id="secret-info" class="space-y-2"></div>
-                </div>
+                <div id="secret-card-face" class="card-face back absolute inset-0 rounded-2xl flex flex-col items-center justify-center p-6 text-center border-2"></div>
             </div>
         </div>
+        <p class="text-xs text-slate-400">Внимательно изучи карту и нажми кнопку ниже</p>
+        <button onclick="confirmCardReadOnline()" class="w-full py-3 bg-red-500 text-white font-bold rounded-xl active:scale-95 transition">Я всё понял, в игру! 👌</button>
+    </div>
 
-        <p class="text-xs text-slate-500 dark:text-slate-400 mt-4 text-center px-4">Скрой карту повторным нажатием перед тем, как передать телефон!</p>
-
-        <button id="next-btn" disabled onclick="nextPlayer()" class="w-full max-w-[320px] mt-6 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-slate-400 py-4 rounded-xl font-bold tracking-wide transition-all opacity-50 duration-200">
-            Закройте карту для активации
+    <div id="game-screen-online" class="hidden w-full max-w-sm bg-white/90 dark:bg-slate-900/90 backdrop-blur-md p-6 rounded-2xl shadow-xl border border-slate-200 dark:border-slate-800 text-center space-y-4 z-10">
+        <div>
+            <h2 id="game-round-title" class="text-sm font-medium text-slate-500 uppercase tracking-widest">Раунд 1</h2>
+            <div class="text-xs text-slate-400 mt-1">Локация текущей игры: <span id="game-my-loc" class="font-bold text-emerald-400">?</span></div>
+        </div>
+        <div class="text-left border border-slate-200 dark:border-slate-800 rounded-xl p-3 bg-slate-50 dark:bg-slate-950/60 flex flex-col h-64 space-y-2">
+            <div id="chat-messages" class="flex-grow overflow-y-auto space-y-1 text-xs"></div>
+            <div id="chat-turn-indicator" class="text-[11px] font-bold text-center py-1 bg-slate-500/10 text-slate-400 rounded">Очередь...</div>
+            <div class="flex space-x-1.5">
+                <input id="chat-input" type="text" placeholder="Введите ОДНО слово..." oninput="validateWordInput(this)" class="flex-grow bg-white dark:bg-slate-900 border rounded-lg p-2 text-xs focus:outline-none text-slate-900 dark:text-white font-medium">
+                <button id="chat-send-btn" disabled onclick="sendWordOnline()" class="px-3 bg-slate-300 text-slate-500 rounded-lg font-bold text-xs">Отправить</button>
+            </div>
+        </div>
+        <button onclick="goToVotingOnline()" class="w-full py-3.5 bg-gradient-to-r from-red-600 to-orange-600 text-white rounded-xl font-bold text-sm shadow-md active:scale-95 transition">
+            🗳️ Перейти к голосованию
         </button>
     </div>
 
-    <div id="game-screen" class="hidden w-full max-w-sm bg-white/90 dark:bg-slate-900/90 backdrop-blur-md p-6 rounded-2xl shadow-xl dark:shadow-2xl border border-slate-200 dark:border-slate-800 text-center space-y-6 z-10">
-        <div>
-            <h2 id="game-status-title" class="text-sm font-medium text-slate-500 dark:text-slate-400 uppercase tracking-widest">Идет обсуждение</h2>
-            <div id="timer" class="text-6xl font-black font-mono tracking-tight text-slate-800 dark:text-white my-4">05:00</div>
-        </div>
-
-        <div class="space-y-3">
-            <button onclick="goToVoting()" class="w-full py-4 bg-gradient-to-r from-red-600 to-orange-600 hover:from-red-700 hover:to-orange-700 text-white rounded-xl font-bold transition shadow-md active:scale-95">
-                🗳️ Перейти к голосованию
-            </button>
-            <button onclick="openModal()" class="w-full py-3.5 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-800 dark:text-white border border-slate-200 dark:border-slate-700 rounded-xl font-bold transition">
-                📋 Список активных локаций
-            </button>
-            <button onclick="triggerCustomConfirm()" class="w-full py-2.5 bg-red-50 dark:bg-red-950/40 text-red-600 dark:text-red-400 border border-red-200 dark:border-red-900/60 rounded-xl font-medium text-sm transition">
-                Завершить игру
-            </button>
-        </div>
-    </div>
-
-    <div id="voting-screen" class="hidden w-full max-w-sm bg-white/90 dark:bg-slate-900/90 backdrop-blur-md p-6 rounded-2xl shadow-xl dark:shadow-2xl border border-slate-200 dark:border-slate-800 space-y-5 z-10">
+    <div id="voting-screen-online" class="hidden w-full max-w-sm bg-white/90 dark:bg-slate-900/90 backdrop-blur-md p-6 rounded-2xl shadow-xl border border-slate-200 dark:border-slate-800 space-y-4 z-10">
         <div class="text-center">
-            <h2 class="text-2xl font-black tracking-wide text-slate-800 dark:text-white">Голосование</h2>
-            <p class="text-xs text-slate-500 dark:text-slate-400 mt-1 uppercase tracking-widest">Кого вы подозреваете?</p>
+            <h2 class="text-2xl font-black text-slate-800 dark:text-white">Голосование раунда</h2>
+            <p class="text-xs text-slate-500 uppercase tracking-widest mt-0.5">Кто шпион?</p>
         </div>
-
-        <div id="voting-players-list" class="space-y-2 max-h-60 overflow-y-auto pr-1"></div>
-
-        <div class="pt-3 border-t border-slate-200 dark:border-slate-800 flex flex-col space-y-2">
-            <div class="flex space-x-2">
-                <button id="back-to-timer-btn" onclick="backToTimer()" class="w-1/2 py-3 bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700 rounded-xl text-sm font-bold transition active:scale-95">
-                    ⬅️ Назад к таймеру
-                </button>
-                <button id="submit-vote-btn" disabled onclick="executeVote()" class="w-1/2 py-3 bg-red-600 text-white rounded-xl text-sm font-bold transition opacity-50 cursor-not-allowed">
-                    Выгнать игрока
-                </button>
+        <div class="text-left border border-slate-200 dark:border-slate-800 rounded-xl p-3 bg-slate-50 dark:bg-slate-950/60 flex flex-col h-40 space-y-2">
+            <div id="voting-messages" class="flex-grow overflow-y-auto space-y-1 text-[11px]"></div>
+            <div class="flex space-x-1.5">
+                <input id="voting-input" type="text" placeholder="Напишите подозрения..." class="flex-grow bg-white dark:bg-slate-900 border rounded-lg p-1.5 text-xs focus:outline-none text-slate-900 dark:text-white">
+                <button onclick="sendVotingMessageOnline()" class="px-3 bg-red-500 text-white rounded-lg font-bold text-xs hover:bg-red-600">Отправить</button>
             </div>
-            <button onclick="triggerCustomConfirm()" class="w-full py-2 bg-slate-50 dark:bg-slate-900 text-slate-400 hover:text-red-500 rounded-lg text-xs font-medium transition">
-                Сбросить и выйти в меню
+        </div>
+        <div id="voting-players-list" class="space-y-2 max-h-40 overflow-y-auto"></div>
+        <div class="pt-3 border-t border-slate-200 dark:border-slate-800 flex space-x-2">
+            <button id="skip-vote-btn" onclick="selectSkipOnline()" class="w-1/2 py-3 bg-amber-500/10 text-amber-500 border border-amber-500/30 rounded-xl text-xs font-bold active:scale-95 transition">
+                ⏭️ Скип (Пропустить)
+            </button>
+            <button id="submit-vote-btn" disabled onclick="confirmVoteOnline()" class="w-1/2 py-3 bg-slate-300 text-slate-500 rounded-xl text-xs font-bold cursor-not-allowed">
+                Выгнать 🛑
             </button>
         </div>
     </div>
 
-    <div id="result-screen" class="hidden w-full max-w-sm bg-white dark:bg-slate-900 p-6 rounded-2xl shadow-xl dark:shadow-2xl border border-slate-200 dark:border-slate-800 text-center space-y-6 z-10">
-        <div>
-            <h2 class="text-sm font-medium text-slate-500 dark:text-slate-400 uppercase tracking-widest">Результаты изгнания</h2>
-            <p id="result-verdict" class="text-xl font-bold text-slate-800 dark:text-white mt-2"></p>
-        </div>
 
-        <div id="result-card-box" class="p-6 rounded-2xl border-2 transition-all"></div>
-
-        <button onclick="location.reload()" class="w-full py-4 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-xl font-bold shadow-md active:scale-95 transition">
-            В главное меню 🔄
-        </button>
+    <div id="result-screen" class="hidden w-full max-w-sm bg-white dark:bg-slate-900 p-6 rounded-2xl shadow-xl border border-slate-200 text-center space-y-5 z-10">
+        <h2 class="text-sm font-medium text-slate-400 uppercase tracking-widest">Результаты игры</h2>
+        <div id="result-box" class="p-5 rounded-2xl border-2"></div>
+        <button onclick="location.reload()" class="w-full py-3.5 bg-blue-600 text-white rounded-xl font-bold active:scale-95 transition">В главное меню 🔄</button>
     </div>
 
-    <div id="locations-modal" class="modal-hidden fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 z-50">
-        <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 w-full max-w-sm rounded-2xl max-h-[80vh] flex flex-col shadow-2xl">
-            <div class="p-4 border-b border-slate-200 dark:border-slate-800 flex justify-between items-center">
-                <h3 id="modal-title" class="font-bold text-lg text-slate-800 dark:text-slate-200">Возможные локации</h3>
-                <button onclick="closeModal()" class="text-slate-500 dark:text-slate-400 hover:text-red-500 font-bold text-xl p-1">&times;</button>
+    <div id="locations-modal" class="modal-hidden fixed inset-0 bg-slate-950/60 backdrop-blur-sm flex items-center justify-center p-4 z-50">
+        <div class="bg-white dark:bg-slate-900 rounded-2xl max-w-sm w-full p-6 space-y-4 shadow-2xl border border-slate-200 dark:border-slate-800 max-h-[85vh] overflow-y-auto">
+            <div class="flex justify-between items-center border-b border-slate-200 dark:border-slate-800 pb-2">
+                <h3 class="text-lg font-black text-slate-800 dark:text-white">🗺️ Все локации в игре</h3>
+                <button onclick="closeModal()" class="p-1 rounded-lg text-slate-400 hover:text-red-500 transition">✖️</button>
             </div>
-            <div id="modal-content" class="p-4 overflow-y-auto space-y-4 text-left text-sm text-slate-700 dark:text-slate-300"></div>
-            <div class="p-4 border-t border-slate-200 dark:border-slate-800">
-                <button onclick="closeModal()" class="w-full py-3 bg-red-600 rounded-xl font-bold text-white transition">Закрыть</button>
-            </div>
+            <div id="locations-modal-list" class="space-y-4"></div>
         </div>
     </div>
 
-    <div id="custom-confirm-modal" class="modal-hidden fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 z-50">
-        <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 w-full max-w-xs rounded-2xl p-6 shadow-2xl text-center space-y-5">
-            <div class="mx-auto w-12 h-12 bg-red-100 dark:bg-red-950/50 rounded-full flex items-center justify-center text-red-500">
-                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
-                </svg>
-            </div>
-            <div class="space-y-1">
-                <h3 class="font-bold text-lg text-slate-900 dark:text-white">Подтвердите действие</h3>
-                <p class="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">Вы уверены, что хотите завершить текущую игру и сбросить весь прогресс?</p>
-            </div>
-            <div class="flex space-x-2 pt-2">
-                <button onclick="closeCustomConfirm()" class="w-1/2 py-2.5 bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 rounded-xl text-sm font-bold transition active:scale-95">
-                    Отмена
-                </button>
-                <button onclick="executeExitGame()" class="w-1/2 py-2.5 bg-red-600 hover:bg-red-700 text-white rounded-xl text-sm font-bold transition shadow-md active:scale-95">
-                    Да, выйти
-                </button>
+    <div id="custom-confirm-modal" class="modal-hidden fixed inset-0 bg-slate-950/40 backdrop-blur-sm flex items-center justify-center p-4 z-50">
+        <div class="bg-white dark:bg-slate-900 rounded-2xl max-w-xs w-full p-5 text-center space-y-4 border border-slate-200 dark:border-slate-800 shadow-xl">
+            <h4 class="text-md font-bold text-slate-800 dark:text-white">Завершить текущую игру?</h4>
+            <p class="text-xs text-slate-400">Весь прогресс раунда будет безвозвратно утерян.</p>
+            <div class="flex space-x-2 pt-1">
+                <button onclick="closeCustomConfirm()" class="w-1/2 py-2.5 bg-slate-100 dark:bg-slate-800 text-xs font-bold rounded-xl text-slate-600 dark:text-slate-300">Отмена</button>
+                <button onclick="executeExitGameOffline()" class="w-1/2 py-2.5 bg-red-500 text-xs font-bold rounded-xl text-white shadow-md shadow-red-500/20">Да, выйти</button>
             </div>
         </div>
     </div>
 
     <script>
+        // БАЗА ДАННЫХ ВСЕХ ТВОИХ ОФФЛАЙН ЛОКАЦИЙ ИЗ ОРИГИНАЛА
         const locationsDb = {
-            "base": [
-                "Больница", "Школа", "Полицейский участок", "Пожарная часть", "Супермаркет",
-                "Банк", "Ресторан итальянской кухни", "Отель / Гостиница", "Автосервис",
-                "Городской парк", "Фитнес-клуб", "Парикмахерская / Салон красоты",
-                "Офис крупной компании", "Строительная площадка", "Метрополитен"
-            ],
-            "travel": [
-                "Пассажирский самолет", "Круизный лайнер", "Поезд дальнего следования",
-                "Международный аэропорт", "Египетские пирамиды", "Эйфелева башня (Париж)",
-                "Остров дикарей в океане", "Горнолыжный курорт", "Палаточный кемпинг в лесу",
-                "Морской порт", "Космический отель", "Военная база в пустыне",
-                "Пляж на Мальдивах", "Древний замок в Шотландии", "Парк аттракционов (Диснейленд)"
-            ],
-            "hollywood": [
-                "Киностудия (Съемочная площадка)", "Театр / Опера", "Рок-концерт (За кулисами)",
-                "Музей восковых фигур", "Тайное убежище суперзлодея", "Особняк вампиров",
-                "Казино в Лас-Вегасе", "Выставка робототехники", "Академия магии и волшебства",
-                "Орбитальная космическая станция", "Исследовательская база на Марсе",
-                "Атомная подводная лодка", "Бункер на случай зомби-апокалипсиса",
-                "Геймерский компьютерный клуб", "Пиратский корабль"
-            ]
+            base: ["Орбитальная станция", "Подводная лодка", "Киностудия", "Банк", "Пиратский корабль", "Театр", "Полярная станция"],
+            hollywood: ["Павильон Марвел", "Красная дорожка", "Гримерная", "Студия дубляжа", "Оскар церемония"],
+            corporation: ["Бухгалтерия", "Кабинет директора", "Переговорка", "Курилка", "Кофе-поинт"],
+            chill: ["Пляжный бар", "Шезлонг", "Бассейн с подогревом", "Яхта олигарха", "Аквапарк"]
         };
+        const themeTitles = { base: "Базовая подборка", hollywood: "Голливуд / Фильмы", corporation: "Корпорация / Офис", chill: "На чиле / Курорт" };
 
-        const themeTitles = { 
-            base: "🏙️ Базовый набор", 
-            travel: "✈️ Путешествия", 
-            hollywood: "🎬 Поп-культура и кино" 
-        };
+        let currentAppMode = null; // 'offline' или 'online'
+        const socket = io();
 
-        let state = { 
-            roles: [], 
-            currentPlayer: 0, 
-            activeLocations: [], 
-            hasLooked: false, 
-            timerInterval: null, 
-            selectedSuspect: null,
-            remainingSeconds: 0,
-            isNoTimeMode: false,
-            currentSelectedThemes: ['base']
-        };
+        // Переключение ночной темы
+        function toggleTheme() { document.documentElement.classList.toggle('dark'); }
 
-        function toggleTheme() {
-            document.documentElement.classList.toggle('dark');
+        // Роутинг менюшек
+        function switchMode(mode) {
+            currentAppMode = mode;
+            document.getElementById('mode-selection-screen').classList.add('hidden');
+            if(mode === 'offline') {
+                document.getElementById('setup-screen-offline').classList.remove('hidden');
+            } else {
+                document.getElementById('setup-screen-online').classList.remove('hidden');
+            }
+        }
+        function backToMainMenu() {
+            document.getElementById('setup-screen-offline').classList.add('hidden');
+            document.getElementById('setup-screen-online').classList.add('hidden');
+            document.getElementById('mode-selection-screen').classList.remove('hidden');
         }
 
-        // Исправлено: теперь корректно отображается контент именно запрашиваемой темы
-        function previewTheme(themeKey) {
-            document.getElementById('modal-title').innerText = "Локации набора";
-            const container = document.getElementById('modal-content');
-            container.innerHTML = "";
+        // =========================================================
+        // =============== ЛОГИКА 1. ОФФЛАЙН РЕЖИМА ================
+        // =========================================================
+        let stateOff = { players: [], currentIndex: 0, timerInterval: null, timeLeft: 0, location: "" };
 
-            if (locationsDb[themeKey]) {
-                let section = document.createElement('div');
+        function showLocationsModal() {
+            const container = document.getElementById('locations-modal-list');
+            container.innerHTML = "";
+            for (let theme in locationsDb) {
+                const section = document.createElement('div');
                 section.innerHTML = `
-                    <h4 class="font-bold text-slate-500 dark:text-slate-400 border-b border-slate-200 dark:border-slate-800 pb-1 mb-2 uppercase text-xs tracking-wider">${themeTitles[themeKey]}</h4>
-                    <ul class="grid grid-cols-1 gap-1">
-                        ${locationsDb[themeKey].map(loc => `<li class="py-1 px-2 bg-slate-50 dark:bg-slate-800/40 rounded border border-slate-200 dark:border-slate-800/50 text-xs">${loc}</li>`).join('')}
-                    </ul>
+                    <h4 class="text-slate-400 border-b border-slate-200 dark:border-slate-800 pb-1 mb-2 uppercase text-xs tracking-wider font-bold">${themeTitles[theme]}</h4>
+                    <ul class="grid grid-cols-2 gap-1">${locationsDb[theme].map(loc => `<li class="py-1 px-2 bg-slate-50 dark:bg-slate-800/40 rounded border border-slate-200 dark:border-slate-800/50 text-[11px] font-medium">${loc}</li>`).join('')}</ul>
                 `;
                 container.appendChild(section);
             }
-            
             const modal = document.getElementById('locations-modal');
-            modal.classList.remove('modal-hidden');
-            modal.classList.add('modal-active');
+            modal.classList.remove('modal-hidden'); modal.classList.add('modal-active');
         }
-
-        function startGame() {
-            const numPlayers = parseInt(document.getElementById('players').value);
-            const numSpies = parseInt(document.getElementById('spies').value);
-            state.currentSelectedThemes = Array.from(document.querySelectorAll('#themes input:checked')).map(i => i.value);
-            
-            if (state.currentSelectedThemes.length === 0) { alert("Выберите хотя бы один набор локаций!"); return; }
-            if (numSpies >= numPlayers) { alert("Шпионов не может быть больше или столько же, сколько игроков!"); return; }
-
-            const timeInput = document.getElementById('time').value;
-            if (!timeInput || parseInt(timeInput) <= 0) {
-                state.isNoTimeMode = true;
-                state.remainingSeconds = 0;
-            } else {
-                state.isNoTimeMode = false;
-                state.remainingSeconds = parseInt(timeInput) * 60;
-            }
-
-            state.activeLocations = state.currentSelectedThemes.flatMap(t => locationsDb[t]);
-            const targetLocation = state.activeLocations[Math.floor(Math.random() * state.activeLocations.length)];
-            
-            state.roles = new Array(numPlayers).fill(targetLocation);
-            for(let i = 0; i < numSpies; i++) { state.roles[i] = "ШПИОН"; }
-            state.roles.sort(() => Math.random() - 0.5);
-            state.currentPlayer = 0;
-            
-            document.getElementById('setup-screen').classList.add('hidden');
-            document.getElementById('distribute-screen').classList.remove('hidden');
-            
-            updatePlayerScreen();
-        }
-
-        function updatePlayerScreen() {
-            state.hasLooked = false; 
-            document.getElementById('player-title').innerText = `Игрок ${state.currentPlayer + 1}`;
-            
-            const card = document.getElementById('card');
-            const cardBack = document.getElementById('card-back');
-            const secretInfo = document.getElementById('secret-info');
-            const nextBtn = document.getElementById('next-btn');
-
-            card.classList.remove('flipped');
-            
-            nextBtn.disabled = true;
-            nextBtn.className = "w-full max-w-[320px] mt-6 border text-slate-400 py-4 rounded-xl font-bold tracking-wide transition-all opacity-50 duration-200 bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-700";
-            nextBtn.innerText = "Закройте карту для активации";
-
-            if (state.roles[state.currentPlayer] === "ШПИОН") {
-                cardBack.className = "card-face back absolute inset-0 bg-gradient-to-br from-red-100 to-red-50 dark:from-red-950 dark:to-slate-900 rounded-2xl flex flex-col items-center justify-center p-6 text-center border-2 border-red-500 shadow-lg shadow-red-500/10 dark:shadow-red-900/20";
-                secretInfo.innerHTML = `
-                    <div class="text-sm uppercase tracking-widest text-red-600 dark:text-red-400 font-bold mb-1">Ваш статус:</div>
-                    <div class="text-4xl font-black text-red-600 dark:text-red-500 tracking-wider">ШПИОН🕵️‍♂️</div>
-                    <div class="text-xs text-slate-600 dark:text-slate-400 mt-4 px-4 leading-relaxed">Вы не знаете локацию. Задавайте вопросы аккуратно, чтобы вычислить местных и не выдать себя.</div>
-                `;
-            } else {
-                cardBack.className = "card-face back absolute inset-0 bg-gradient-to-br from-emerald-50 to-teal-50 dark:from-slate-900 dark:to-slate-800 rounded-2xl flex flex-col items-center justify-center p-6 text-center border-2 border-emerald-500 shadow-lg shadow-emerald-500/10 dark:shadow-emerald-900/10";
-                secretInfo.innerHTML = `
-                    <div class="text-sm uppercase tracking-widest text-emerald-600 dark:text-emerald-400 font-bold mb-1">Вы местный</div>
-                    <div class="text-xs text-slate-500 dark:text-slate-400 mb-2">Секретная локация:</div>
-                    <div class="text-2xl font-extrabold text-slate-800 dark:text-white bg-white dark:bg-slate-800 px-4 py-3 rounded-xl border border-slate-200 dark:border-slate-700/60 shadow-sm">${state.roles[state.currentPlayer]}</div>
-                `;
-            }
-        }
-
-        function toggleCard() {
-            const card = document.getElementById('card');
-            card.classList.toggle('flipped');
-            
-            const isFlipped = card.classList.contains('flipped');
-            if (isFlipped) { state.hasLooked = true; }
-
-            const nextBtn = document.getElementById('next-btn');
-            if (state.hasLooked && !isFlipped) {
-                nextBtn.disabled = false;
-                nextBtn.className = "w-full max-w-[320px] mt-6 bg-green-600 text-white py-4 rounded-xl font-bold tracking-wide transition-all duration-200 border border-transparent shadow-md active:scale-95";
-                nextBtn.innerText = "Передать следующему ➡️";
-            } else {
-                nextBtn.disabled = true;
-                nextBtn.className = "w-full max-w-[320px] mt-6 border text-slate-400 py-4 rounded-xl font-bold tracking-wide transition-all opacity-50 duration-200 bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-700";
-                nextBtn.innerText = isFlipped ? "Скройте карту нажатием" : "Закройте карту для активации";
-            }
-        }
-
-        function nextPlayer() {
-            state.currentPlayer++;
-            if (state.currentPlayer < state.roles.length) { 
-                updatePlayerScreen(); 
-            } else { 
-                startTimer(); 
-            }
-        }
-
-        function startTimer() {
-            document.getElementById('distribute-screen').classList.add('hidden');
-            document.getElementById('voting-screen').classList.add('hidden');
-            document.getElementById('game-screen').classList.remove('hidden');
-            
-            updateTimerDisplay();
-
-            if(state.timerInterval) clearInterval(state.timerInterval);
-            
-            if (!state.isNoTimeMode) {
-                state.timerInterval = setInterval(() => {
-                    state.remainingSeconds--;
-                    updateTimerDisplay();
-                    
-                    if (state.remainingSeconds <= 0) {
-                        clearInterval(state.timerInterval);
-                        state.timerInterval = null;
-                        goToVoting();
-                    }
-                }, 1000);
-            }
-        }
-
-        function updateTimerDisplay() {
-            const timerDisplay = document.getElementById('timer');
-            const statusTitle = document.getElementById('game-status-title');
-            
-            if (state.isNoTimeMode) {
-                statusTitle.innerText = "Свободный режим";
-                timerDisplay.innerText = "Без времени ♾️";
-                timerDisplay.className = "text-4xl font-black tracking-tight text-slate-700 dark:text-slate-300 my-6";
-            } else {
-                statusTitle.innerText = "Идет обсуждение";
-                let m = Math.floor(state.remainingSeconds / 60);
-                let s = state.remainingSeconds % 60;
-                timerDisplay.innerText = `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
-                
-                if (state.remainingSeconds <= 10 && state.remainingSeconds > 0) { 
-                    timerDisplay.className = "text-6xl font-black font-mono tracking-tight text-red-500 my-4 animate-pulse"; 
-                } else {
-                    timerDisplay.className = "text-6xl font-black font-mono tracking-tight text-slate-800 dark:text-white my-4";
-                }
-            }
-        }
-
-        function goToVoting() {
-            if(state.timerInterval) {
-                clearInterval(state.timerInterval);
-                state.timerInterval = null;
-            }
-
-            document.getElementById('game-screen').classList.add('hidden');
-            document.getElementById('voting-screen').classList.remove('hidden');
-            
-            const listContainer = document.getElementById('voting-players-list');
-            listContainer.innerHTML = "";
-            state.selectedSuspect = null;
-
-            const backBtn = document.getElementById('back-to-timer-btn');
-            if (!state.isNoTimeMode && state.remainingSeconds <= 0) {
-                backBtn.disabled = true;
-                backBtn.className = "w-1/2 py-3 bg-slate-200 dark:bg-slate-800 text-slate-400 dark:text-slate-600 rounded-xl text-sm font-bold opacity-50 cursor-not-allowed";
-                backBtn.innerText = "Время вышло ⏳";
-            } else {
-                backBtn.disabled = false;
-                backBtn.className = "w-1/2 py-3 bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700 rounded-xl text-sm font-bold transition active:scale-95";
-                backBtn.innerText = "⬅️ Назад к игре";
-            }
-
-            const submitBtn = document.getElementById('submit-vote-btn');
-            submitBtn.disabled = true;
-            submitBtn.className = "w-1/2 py-3 bg-red-600 text-white rounded-xl text-sm font-bold transition opacity-50 cursor-not-allowed";
-
-            state.roles.forEach((_, idx) => {
-                const btn = document.createElement('button');
-                btn.type = "button";
-                btn.innerText = `Игрок ${idx + 1}`;
-                btn.className = "w-full py-3.5 px-4 text-left font-bold rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/50 hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-800 dark:text-slate-200 transition";
-                btn.onclick = () => selectSuspect(idx, btn);
-                listContainer.appendChild(btn);
-            });
-        }
-
-        function backToTimer() {
-            if (state.isNoTimeMode || state.remainingSeconds > 0) {
-                startTimer();
-            }
-        }
-
-        function selectSuspect(index, buttonElement) {
-            state.selectedSuspect = index;
-            const buttons = document.getElementById('voting-players-list').getElementsByTagName('button');
-            for (let btn of buttons) {
-                btn.className = "w-full py-3.5 px-4 text-left font-bold rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/50 hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-800 dark:text-slate-200 transition";
-            }
-            buttonElement.className = "w-full py-3.5 px-4 text-left font-bold rounded-xl border-2 border-red-500 bg-red-50/50 dark:bg-red-950/30 text-red-600 dark:text-red-400 transition shadow-md";
-
-            const submitBtn = document.getElementById('submit-vote-btn');
-            submitBtn.disabled = false;
-            submitBtn.className = "w-1/2 py-3 bg-red-600 hover:bg-red-700 text-white rounded-xl text-sm font-bold transition shadow-lg active:scale-95";
-        }
-
-        function executeVote() {
-            if (state.selectedSuspect === null) return;
-            const suspectRole = state.roles[state.selectedSuspect];
-            const playerNum = state.selectedSuspect + 1;
-
-            document.getElementById('voting-screen').classList.add('hidden');
-            document.getElementById('result-screen').classList.remove('hidden');
-
-            document.getElementById('result-verdict').innerText = `Большинство проголосовало против Игрока ${playerNum}`;
-            const box = document.getElementById('result-card-box');
-
-            if (suspectRole === "ШПИОН") {
-                box.className = "p-6 rounded-2xl border-2 border-emerald-500 bg-emerald-50 dark:bg-emerald-950/20 text-center";
-                box.innerHTML = `
-                    <div class="text-xs uppercase tracking-wider text-emerald-600 dark:text-emerald-400 font-bold mb-1">Раскрытая роль:</div>
-                    <div class="text-3xl font-black text-emerald-600 dark:text-emerald-500 mb-2">ШПИОН🕵️‍♂️</div>
-                    <p class="text-sm text-slate-600 dark:text-slate-400">Победа местных жителей! Вы вовремя вычислили саботажника и спасли секретную локацию.</p>
-                `;
-            } else {
-                box.className = "p-6 rounded-2xl border-2 border-red-500 bg-red-50 dark:bg-red-950/20 text-center";
-                box.innerHTML = `
-                    <div class="text-xs uppercase tracking-wider text-red-600 dark:text-red-400 font-bold mb-1">Раскрытая роль:</div>
-                    <div class="text-3xl font-black text-red-600 dark:text-red-500 mb-2">МЕСТНЫЙ ЖИТЕЛЬ👨‍🌾</div>
-                    <p class="text-xs text-slate-500 dark:text-slate-400 mb-2">Он знал локацию:</p>
-                    <div class="inline-block bg-white dark:bg-slate-800 text-slate-800 dark:text-white px-3 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700 font-bold mb-3 text-sm">${suspectRole}</div>
-                    <p class="text-sm text-slate-600 dark:text-slate-400">Победа Шпиона! Вы выгнали невиновного гражданина, и шпион остался нераскрытым.</p>
-                `;
-            }
-        }
-
-        function openModal() {
-            document.getElementById('modal-title').innerText = "Возможные локации";
-            const container = document.getElementById('modal-content');
-            container.innerHTML = "";
-
-            state.currentSelectedThemes.forEach(theme => {
-                if (locationsDb[theme]) {
-                    let section = document.createElement('div');
-                    section.innerHTML = `
-                        <h4 class="font-bold text-slate-500 dark:text-slate-400 border-b border-slate-200 dark:border-slate-800 pb-1 mb-2 uppercase text-xs tracking-wider">${themeTitles[theme]}</h4>
-                        <ul class="grid grid-cols-1 gap-1">
-                            ${locationsDb[theme].map(loc => `<li class="py-1 px-2 bg-slate-50 dark:bg-slate-800/40 rounded border border-slate-200 dark:border-slate-800/50 text-xs">${loc}</li>`).join('')}
-                        </ul>
-                    `;
-                    container.appendChild(section);
-                }
-            });
-
-            const modal = document.getElementById('locations-modal');
-            modal.classList.remove('modal-hidden');
-            modal.classList.add('modal-active');
-        }
-
         function closeModal() {
             const modal = document.getElementById('locations-modal');
-            modal.classList.remove('modal-active');
-            modal.classList.add('modal-hidden');
+            modal.classList.remove('modal-active'); modal.classList.add('modal-hidden');
         }
-
-        /* --- НОВЫЕ ФУНКЦИИ ДЛЯ КАСТОМНОЙ МОДАЛКИ ПОДТВЕРЖДЕНИЯ --- */
         function triggerCustomConfirm() {
-            const confirmModal = document.getElementById('custom-confirm-modal');
-            confirmModal.classList.remove('modal-hidden');
-            confirmModal.classList.add('modal-active');
+            document.getElementById('custom-confirm-modal').classList.remove('modal-hidden');
+            document.getElementById('custom-confirm-modal').classList.add('modal-active');
         }
-
         function closeCustomConfirm() {
-            const confirmModal = document.getElementById('custom-confirm-modal');
-            confirmModal.classList.remove('modal-active');
-            confirmModal.classList.add('modal-hidden');
+            document.getElementById('custom-confirm-modal').classList.remove('modal-active');
+            document.getElementById('custom-confirm-modal').classList.add('modal-hidden');
         }
-
-        function executeExitGame() {
-            if(state.timerInterval) clearInterval(state.timerInterval);
+        function executeExitGameOffline() {
+            if(stateOff.timerInterval) clearInterval(stateOff.timerInterval);
             location.reload();
         }
+
+        function startOfflineGame() {
+            const pCount = parseInt(document.getElementById('player-count-off').value);
+            const sCount = parseInt(document.getElementById('spy-count-off').value);
+            const theme = document.getElementById('theme-select-off').value;
+            
+            if(sCount >= pCount - 1) { alert("Шпионов не может быть больше, чем мирных!"); return; }
+
+            // Выбор пула локаций
+            let pool = [];
+            if(theme === 'all') {
+                for(let t in locationsDb) pool = pool.concat(locationsDb[t]);
+            } else {
+                pool = locationsDb[theme];
+            }
+            stateOff.location = pool[Math.floor(Math.random() * pool.length)];
+
+            // Создаем массив игроков
+            stateOff.players = Array(pCount).fill().map((_, i) => ({ id: i + 1, isSpy: false }));
+            
+            // Расставляем шпионов случайным образом
+            let assignedSpies = 0;
+            while(assignedSpies < sCount) {
+                let rIdx = Math.floor(Math.random() * pCount);
+                if(!stateOff.players[rIdx].isSpy) {
+                    stateOff.players[rIdx].isSpy = true;
+                    assignedSpies++;
+                }
+            }
+
+            stateOff.currentIndex = 0;
+            stateOff.timeLeft = parseInt(document.getElementById('timer-count-off').value) * 60;
+
+            document.getElementById('setup-screen-offline').classList.add('hidden');
+            document.getElementById('card-screen-offline').classList.remove('hidden');
+            renderOfflineCard();
+        }
+
+        function renderOfflineCard() {
+            document.getElementById('card-off').classList.remove('flipped');
+            document.getElementById('player-turn-title-off').innerText = `Игрок ${stateOff.players[stateOff.currentIndex].id}, открой карту`;
+            
+            const p = stateOff.players[stateOff.currentIndex];
+            const face = document.getElementById('card-face-content-off');
+            if(p.isSpy) {
+                face.className = "card-face back absolute inset-0 bg-gradient-to-br from-red-100 to-slate-900 text-center border-2 border-red-500 flex flex-col items-center justify-center p-6";
+                face.innerHTML = `<div class="text-xs uppercase text-red-500 font-bold tracking-wider">Роль:</div><div class="text-4xl font-black text-red-600">ШПИОН 🕵️‍♂️</div><p class="text-[11px] text-slate-400 mt-2">Вычисляй мирных по вопросам, твоя задача не выдать себя!</p>`;
+            } else {
+                face.className = "card-face back absolute inset-0 bg-gradient-to-br from-emerald-50 to-slate-800 text-center border-2 border-emerald-500 flex flex-col items-center justify-center p-6";
+                face.innerHTML = `<div class="text-xs uppercase text-emerald-400 font-bold tracking-wider">Вы мирный житель. Локация:</div><div class="text-2xl font-black text-white bg-slate-800 px-4 py-2 mt-2 border border-slate-700 rounded-xl shadow">${stateOff.location}</div>`;
+            }
+        }
+
+        function nextOfflinePlayer() {
+            stateOff.currentIndex++;
+            if(stateOff.currentIndex < stateOff.players.length) {
+                renderOfflineCard();
+            } else {
+                // Все посмотрели роли — запускаем таймер
+                document.getElementById('card-screen-offline').classList.add('hidden');
+                document.getElementById('game-screen-offline').classList.remove('hidden');
+                startOfflineTimer();
+            }
+        }
+
+        function startOfflineTimer() {
+            const display = document.getElementById('timer-display-off');
+            stateOff.timerInterval = setInterval(() => {
+                let m = Math.floor(stateOff.timeLeft / 60);
+                let s = stateOff.timeLeft % 60;
+                display.innerText = `${m.toString().padStart(2,'0')}:${s.toString().padStart(2,'0')}`;
+                if(stateOff.timeLeft <= 0) {
+                    clearInterval(stateOff.timerInterval);
+                    display.innerText = "ВРЕМЯ ВЫШЛО!";
+                    alert("Время на обсуждение вышло! Пора голосовать и раскрывать шпиона!");
+                }
+                stateOff.timeLeft--;
+            }, 1000);
+        }
+
+        // =========================================================
+        // =============== ЛОГИКА 2. ОНЛАЙН РЕЖИМА =================
+        // =========================================================
+        let myRoomCode = '';
+        let myId = '';
+        let roomDataCache = null;
+        let selectedSuspectId = null;
+
+        function validateMenuOnline() {
+            const nickname = document.getElementById('online-nickname').value.trim();
+            const code = document.getElementById('online-code-input').value.trim();
+            const btnCreate = document.getElementById('btn-create-lobby');
+            const btnJoin = document.getElementById('btn-join-lobby');
+
+            if (nickname.length > 0) {
+                btnCreate.disabled = false;
+                btnCreate.className = "w-full py-3.5 bg-gradient-to-r from-red-500 to-orange-500 text-white rounded-xl font-bold active:scale-95 transition shadow-md cursor-pointer";
+                if (code.length >= 3) {
+                    btnJoin.disabled = false;
+                    btnJoin.className = "w-1/2 py-3 bg-red-600 text-white rounded-xl font-bold active:scale-95 transition text-sm shadow-md cursor-pointer";
+                } else {
+                    btnJoin.disabled = true;
+                    btnJoin.className = "w-1/2 py-3 bg-slate-300 dark:bg-slate-700 text-slate-500 rounded-xl font-bold text-sm cursor-not-allowed";
+                }
+            } else {
+                btnCreate.disabled = true;
+                btnCreate.className = "w-full py-3.5 bg-slate-300 dark:bg-slate-700 text-slate-500 rounded-xl font-bold cursor-not-allowed";
+                btnJoin.disabled = true;
+                btnJoin.className = "w-1/2 py-3 bg-slate-300 dark:bg-slate-700 text-slate-500 rounded-xl font-bold text-sm cursor-not-allowed";
+            }
+        }
+
+        function createLobby() {
+            const nickname = document.getElementById('online-nickname').value.trim();
+            socket.emit('createRoom', { nickname });
+        }
+        function joinLobby() {
+            const nickname = document.getElementById('online-nickname').value.trim();
+            const roomCode = document.getElementById('online-code-input').value.trim().toUpperCase();
+            socket.emit('joinRoom', { roomCode, nickname });
+        }
+        function copyCode() {
+            navigator.clipboard.writeText(myRoomCode).then(() => {
+                const toast = document.getElementById('copy-toast');
+                toast.classList.remove('opacity-0');
+                setTimeout(() => toast.classList.add('opacity-0'), 1500);
+            });
+        }
+        function startGameOnline() { socket.emit('startGame', { roomCode: myRoomCode }); }
+        function confirmCardReadOnline() {
+            document.getElementById('online-card-screen').classList.add('hidden');
+            document.getElementById('game-screen-online').classList.remove('hidden');
+        }
+        function validateWordInput(input) {
+            const val = input.value.trim();
+            const sendBtn = document.getElementById('chat-send-btn');
+            if (val.includes(" ") || val.length === 0) {
+                sendBtn.disabled = true;
+                sendBtn.className = "px-3 bg-slate-300 text-slate-500 rounded-lg font-bold text-xs cursor-not-allowed";
+            } else {
+                sendBtn.disabled = false;
+                sendBtn.className = "px-3 bg-emerald-500 text-white rounded-lg font-bold text-xs shadow cursor-pointer";
+            }
+        }
+        function sendWordOnline() {
+            const input = document.getElementById('chat-input');
+            const word = input.value.trim();
+            if (!word || word.includes(" ")) return;
+            socket.emit('chatWord', { roomCode: myRoomCode, word });
+            input.value = "";
+            validateWordInput(input);
+        }
+        function goToVotingOnline() { socket.emit('startVoting', { roomCode: myRoomCode }); }
+        function sendVotingMessageOnline() {
+            const input = document.getElementById('voting-input');
+            const msg = input.value.trim();
+            if (!msg) return;
+            socket.emit('votingChatMsg', { roomCode: myRoomCode, msg });
+            input.value = "";
+        }
+        function selectSuspectOnline(id, btn) {
+            document.querySelectorAll('.vote-p-btn').forEach(b => {
+                b.className = "w-full py-2.5 px-4 text-left font-bold rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/50 vote-p-btn text-xs";
+            });
+            document.getElementById('skip-vote-btn').className = "w-1/2 py-3 bg-amber-500/10 text-amber-500 border border-amber-500/30 rounded-xl text-xs font-bold active:scale-95 transition";
+            selectedSuspectId = id;
+            btn.className = "w-full py-2.5 px-4 text-left font-bold rounded-xl border-2 border-red-500 bg-red-50/50 dark:bg-red-950/30 text-red-500 vote-p-btn text-xs shadow-sm";
+            const submit = document.getElementById('submit-vote-btn');
+            submit.disabled = false;
+            submit.className = "w-1/2 py-3 bg-red-600 text-white rounded-xl text-xs font-bold shadow cursor-pointer";
+        }
+        function selectSkipOnline() {
+            document.querySelectorAll('.vote-p-btn').forEach(b => {
+                b.className = "w-full py-2.5 px-4 text-left font-bold rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/50 vote-p-btn text-xs";
+            });
+            selectedSuspectId = 'skip';
+            document.getElementById('skip-vote-btn').className = "w-1/2 py-3 bg-amber-500 text-white border border-amber-500 rounded-xl text-xs font-bold shadow-md transition";
+            const submit = document.getElementById('submit-vote-btn');
+            submit.disabled = false;
+            submit.className = "w-1/2 py-3 bg-red-600 text-white rounded-xl text-xs font-bold shadow cursor-pointer";
+        }
+        function confirmVoteOnline() {
+            if (!selectedSuspectId) return;
+            socket.emit('votePlayer', { roomCode: myRoomCode, suspectId: selectedSuspectId });
+            document.getElementById('submit-vote-btn').disabled = true;
+            document.getElementById('submit-vote-btn').innerText = "Голос учтен...⏳";
+        }
+
+        // --- ПРИЕМ СОБЫТИЙ ОНЛАЙНА ОТ СЕРВЕРА ---
+        socket.on('connect', () => { myId = socket.id; });
+        socket.on('roomData', (room) => {
+            roomDataCache = room; myRoomCode = room.roomCode; myId = socket.id;
+            document.getElementById('setup-screen-online').classList.add('hidden');
+            document.getElementById('online-lobby-screen').classList.remove('hidden');
+            document.getElementById('lobby-code-display').innerText = myRoomCode;
+            document.getElementById('lobby-players-count').innerText = `В комнате: ${room.players.length} участников`;
+
+            const list = document.getElementById('lobby-players-list'); list.innerHTML = "";
+            room.players.forEach(p => {
+                const isMe = p.id === myId; const isHost = p.id === room.players[0].id;
+                let badge = isHost ? "👑" : "👤"; let meTag = isMe ? " (Ты)" : "";
+                list.innerHTML += `<div class="font-bold text-xs py-1 px-2 rounded bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300">${badge} ${p.nickname}${meTag}</div>`;
+            });
+
+            if (room.players[0].id === myId) {
+                document.getElementById('host-settings-block').classList.remove('hidden');
+                document.getElementById('player-waiting-block').classList.add('hidden');
+            } else {
+                document.getElementById('host-settings-block').classList.add('hidden');
+                document.getElementById('player-waiting-block').classList.remove('hidden');
+            }
+        });
+
+        socket.on('error', (msg) => { alert(msg); });
+
+        socket.on('gameStarted', ({ location, roles }) => {
+            document.getElementById('online-lobby-screen').classList.add('hidden');
+            document.getElementById('online-card-screen').classList.remove('hidden');
+            const myRoleObj = roles.find(r => r.id === myId);
+            const cardFace = document.getElementById('secret-card-face');
+            
+            if (myRoleObj.isSpy) {
+                cardFace.className = "card-face back absolute inset-0 bg-gradient-to-br from-red-100 to-slate-900 rounded-2xl flex flex-col items-center justify-center p-6 text-center border-2 border-red-500";
+                cardFace.innerHTML = `<div class="text-xs uppercase tracking-widest text-red-500 font-bold mb-1">Ваш статус:</div><div class="text-4xl font-black text-red-600 tracking-wider">ШПИОН🕵️‍♂️</div><div class="text-[11px] text-slate-400 mt-3">Вы не знаете локацию. Вычисляйте местных вопросами!</div>`;
+                document.getElementById('game-my-loc').innerText = "Неизвестно🕵️‍♂️";
+            } else {
+                cardFace.className = "card-face back absolute inset-0 bg-gradient-to-br from-emerald-50 to-slate-800 rounded-2xl flex flex-col items-center justify-center p-6 text-center border-2 border-emerald-500";
+                cardFace.innerHTML = `<div class="text-xs uppercase tracking-widest text-emerald-400 font-bold mb-1">Вы местный житель</div><div class="text-[10px] text-slate-400 mb-1">Локация:</div><div class="text-2xl font-black text-white bg-slate-800 px-4 py-2 rounded-xl border border-slate-700 shadow inline-block">${location}</div>`;
+                document.getElementById('game-my-loc').innerText = location;
+            }
+        });
+
+        socket.on('roundUpdate', ({ round, turnIndex, players }) => {
+            document.getElementById('game-round-title').innerText = `Раунд ${round}`;
+            const activePlayer = players[turnIndex];
+            const indicator = document.getElementById('chat-turn-indicator');
+            const input = document.getElementById('chat-input');
+            const sendBtn = document.getElementById('chat-send-btn');
+
+            if (activePlayer.id === myId) {
+                indicator.innerText = "⭐ ТВОЙ ХОД! Отправь ровно 1 слово.";
+                indicator.className = "text-[11px] font-bold text-center py-1 bg-emerald-500/10 text-emerald-400 rounded animate-pulse";
+                input.disabled = false; input.placeholder = "Введите слово...";
+            } else {
+                indicator.innerText = `⏳ Пишет: ${activePlayer.nickname}`;
+                indicator.className = "text-[11px] font-bold text-center py-1 bg-slate-500/10 text-slate-400 rounded";
+                input.disabled = true; input.placeholder = "Ждите своей очереди...";
+                sendBtn.disabled = true; sendBtn.className = "px-3 bg-slate-300 text-slate-500 rounded-lg font-bold text-xs";
+            }
+        });
+
+        socket.on('newWord', ({ nickname, word }) => {
+            const container = document.getElementById('chat-messages');
+            const isMe = roomDataCache && roomDataCache.players.find(p => p.nickname === nickname)?.id === myId;
+            const color = isMe ? "text-emerald-400 font-extrabold" : "text-red-400 font-bold";
+            container.innerHTML += `<div class="py-0.5 border-b border-slate-100 dark:border-slate-900/40"><span class="${color}">${nickname}:</span> <span class="font-medium">${word}</span></div>`;
+            container.scrollTop = container.scrollHeight;
+        });
+
+        socket.on('votingStarted', () => {
+            document.getElementById('game-screen-online').classList.add('hidden');
+            document.getElementById('voting-screen-online').classList.remove('hidden');
+            const list = document.getElementById('voting-players-list'); list.innerHTML = "";
+            selectedSuspectId = null;
+
+            const submit = document.getElementById('submit-vote-btn');
+            submit.disabled = true; submit.innerText = "Выгнать 🛑";
+            submit.className = "w-1/2 py-3 bg-slate-300 text-slate-500 rounded-xl text-xs font-bold cursor-not-allowed";
+            document.getElementById('skip-vote-btn').className = "w-1/2 py-3 bg-amber-500/10 text-amber-500 border border-amber-500/30 rounded-xl text-xs font-bold active:scale-95 transition";
+
+            if (roomDataCache) {
+                roomDataCache.players.forEach(p => {
+                    if (p.id === myId) return;
+                    const btn = document.createElement('button'); btn.type = "button"; btn.innerText = p.nickname;
+                    btn.className = "w-full py-2.5 px-4 text-left font-bold rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/50 vote-p-btn text-xs text-slate-800 dark:text-slate-200 transition";
+                    btn.onclick = () => selectSuspectOnline(p.id, btn);
+                    list.appendChild(btn);
+                });
+            }
+        });
+
+        socket.on('votingChatBroadcast', ({ nickname, msg }) => {
+            const container = document.getElementById('voting-messages');
+            const isMe = roomDataCache && roomDataCache.players.find(p => p.nickname === nickname)?.id === myId;
+            const color = isMe ? "text-emerald-400 font-bold" : "text-orange-400";
+            container.innerHTML += `<div class="py-0.5"><span class="${color}">${nickname}:</span> <span class="text-slate-700 dark:text-slate-300">${msg}</span></div>`;
+            container.scrollTop = container.scrollHeight;
+        });
+
+        socket.on('votingResult', (data) => {
+            document.getElementById('voting-screen-online').classList.add('hidden');
+            document.getElementById('result-screen').classList.remove('hidden');
+            const box = document.getElementById('result-box');
+
+            if (data.status === 'kick') {
+                if (data.wasSpy) {
+                    box.className = "p-5 rounded-2xl border-2 border-emerald-500 bg-emerald-50 dark:bg-emerald-950/20";
+                    box.innerHTML = `<h3 class="text-xl font-black text-emerald-600 mb-1">Мирные победили! 🎉</h3><p class="text-xs text-slate-500">Был пойман шпион: <span class="font-bold text-slate-800 dark:text-white">${data.kickedName}</span></p>`;
+                } else {
+                    box.className = "p-5 rounded-2xl border-2 border-red-500 bg-red-50 dark:bg-red-950/20";
+                    box.innerHTML = `<h3 class="text-xl font-black text-red-600 mb-1">Шпион победил! 🕵️‍♂️</h3><p class="text-xs text-slate-500">Выгнали мирного жителя: <span class="font-bold text-slate-800 dark:text-white">${data.kickedName}</span>. Шпион остался незамеченным!</p>`;
+                }
+            } else if (data.status === 'draw') {
+                box.className = "p-5 rounded-2xl border-2 border-amber-500 bg-amber-50 dark:bg-amber-950/20";
+                box.innerHTML = `<h3 class="text-xl font-black text-amber-500 mb-1">Никто не изгнан 🤝</h3><p class="text-xs text-slate-500 mb-3">Голоса разделились или игроки пропустили голосование. Раунд продолжается!</p><button onclick="document.getElementById('result-screen').classList.add('hidden'); document.getElementById('game-screen-online').classList.remove('hidden');" class="w-full py-2 bg-amber-500 text-white rounded-xl font-bold text-xs">Продолжить обсуждение 🔄</button>`;
+            }
+        });
     </script>
 </body>
 </html>
