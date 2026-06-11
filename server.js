@@ -40,13 +40,34 @@ function generateRoomCode() {
 function activateVoting(roomCode) {
     const room = rooms[roomCode];
     if (!room) return;
-
     room.status = 'voting';
     room.votingHistory = [];
     room.votes = {};
-    room.votedPlayers.clear();
+    if (room.votedPlayers && typeof room.votedPlayers.clear === 'function') {
+        room.votedPlayers.clear();
+    } else {
+        room.votedPlayers = new Set();
+    }
 
     io.to(roomCode).emit('votingStarted', { players: room.players });
+}
+
+function sendChatUpdate(roomCode) {
+    const room = rooms[roomCode];
+    if (!room) return;
+    io.to(roomCode).emit('chatUpdate', {
+        history: room.history,
+        step: room.step,
+        round: room.round,
+        activePlayerIdx: room.activePlayerIdx,
+        players: room.players
+    });
+}
+
+function sendVotingChatUpdate(roomCode) {
+    const room = rooms[roomCode];
+    if (!room) return;
+    io.to(roomCode).emit('votingChatUpdate', { votingHistory: room.votingHistory });
 }
 
 io.on('connection', (socket) => {
@@ -67,6 +88,7 @@ io.on('connection', (socket) => {
             votes: {}, 
             votedPlayers: new Set()
         };
+   
         socket.join(roomCode);
         socket.emit('roomCreated', { roomCode, playerId: socket.id });
         io.to(roomCode).emit('roomPlayersUpdate', { players: rooms[roomCode].players });
@@ -78,6 +100,7 @@ io.on('connection', (socket) => {
             socket.emit('errorMsg', 'Комната не найдена!');
             return;
         }
+   
         if (rooms[code].status !== 'lobby') {
             socket.emit('errorMsg', 'Игра в этой комнате уже началась!');
             return;
@@ -118,19 +141,17 @@ io.on('connection', (socket) => {
     socket.on('chatWord', (data) => {
         const room = rooms[data.roomCode];
         if (!room || room.status !== 'ingame') return;
-
         const activePlayer = room.players[room.activePlayerIdx];
-        if (socket.id !== activePlayer.id) return; 
+        if (socket.id !== activePlayer.id) return;
 
         room.history.push({ nickname: activePlayer.nickname, word: data.text });
-        
         room.activePlayerIdx = (room.activePlayerIdx + 1) % room.players.length;
         room.step++;
 
         if (room.step > room.players.length) {
-            sendChatUpdate(data.roomCode); 
+            sendChatUpdate(data.roomCode);
             setTimeout(() => {
-                activateVoting(data.roomCode); 
+                activateVoting(data.roomCode);
             }, 1500);
         } else {
             sendChatUpdate(data.roomCode);
@@ -144,92 +165,73 @@ io.on('connection', (socket) => {
     socket.on('votingChatMsg', (data) => {
         const room = rooms[data.roomCode];
         if (!room || room.status !== 'voting') return;
-
         const sender = room.players.find(p => p.id === socket.id);
         if (!sender) return;
 
-        room.votingHistory.push({ nickname: sender.nickname, msg: data.msg });
-        io.to(data.roomCode).emit('votingChatUpdate', room.votingHistory);
+        room.votingHistory.push({ nickname: sender.nickname, text: data.text });
+        sendVotingChatUpdate(data.roomCode);
     });
 
     socket.on('submitVote', (data) => {
         const room = rooms[data.roomCode];
         if (!room || room.status !== 'voting') return;
-        if (room.votedPlayers.has(socket.id)) return; 
+        if (room.votedPlayers.has(socket.id)) return;
 
         room.votedPlayers.add(socket.id);
-        const target = data.suspectId; 
-        room.votes[target] = (room.votes[target] || 0) + 1;
+        room.votes[data.targetId] = (room.votes[data.targetId] || 0) + 1;
+
+        io.to(data.roomCode).emit('playerVotedUpdate', { votedCount: room.votedPlayers.size });
 
         if (room.votedPlayers.size === room.players.length) {
-            processVotes(data.roomCode);
+            processVotingResults(data.roomCode);
         }
     });
-    // 7.5. Попытка шпиона угадать локацию
+
     socket.on('spyGuessLocation', (data) => {
-        const roomCode = data.code;
-        const room = rooms[roomCode];
-        if (!room || room.status !== 'voting') return;
-
-        // Проверяем, что этот игрок действительно шпион
-        const playerRole = room.roles.find(r => r.id === socket.id);
-        if (!playerRole || !playerRole.isSpy) {
-            socket.emit('error', 'Только шпион может угадывать локацию!');
-            return;
-        }
-
-        const guess = data.location.trim().toLowerCase();
-        const actualLocation = room.targetLocation.toLowerCase(); // Убедись, что при старте локация пишется в room.targetLocation
-
-        // Если в твоем текущем коде локация хранится иначе, сервер найдёт её у мирного игрока:
-        const realLocation = room.roles.find(r => !r.isSpy).location.toLowerCase();
-
-        if (guess === realLocation) {
-            io.to(roomCode).emit('gameOver', {
-                status: 'spy_win_guess',
-                kickedName: playerRole.name,
-                actualLocation: room.roles.find(r => !r.isSpy).location,
-                guessWord: data.location
-            });
+        const room = rooms[data.code];
+        if (!room) return;
+        
+        const isCorrect = room.location.toLowerCase().trim() === data.location.toLowerCase().trim();
+        if (isCorrect) {
+            io.to(data.code).emit('gameOver', { status: 'spy_win_guess', kickedName: 'Шпион угадал локацию!', word: room.location });
         } else {
-            io.to(roomCode).emit('gameOver', {
-                status: 'citizens_win_spy_mistake',
-                kickedName: playerRole.name,
-                actualLocation: room.roles.find(r => !r.isSpy).location,
-                guessWord: data.location
-            });
+            io.to(data.code).emit('gameOver', { status: 'citizens_win_guess', kickedName: `Шпион ошибся! Была локация: ${room.location}`, word: room.location });
         }
-        delete rooms[roomCode]; // Удаляем комнату после завершения игры
+        room.status = 'lobby';
     });
 
     socket.on('disconnect', () => {
+        console.log(`Пользователь отключился: ${socket.id}`);
         for (let code in rooms) {
-            rooms[code].players = rooms[code].players.filter(p => p.id !== socket.id);
-            if (rooms[code].players.length === 0) {
-                delete rooms[code];
-            } else {
-                io.to(code).emit('roomPlayersUpdate', { players: rooms[code].players });
+            let room = rooms[code];
+            const playerIndex = room.players.findIndex(p => p.id === socket.id);
+            if (playerIndex !== -1) {
+                const wasHost = room.players[playerIndex].isHost;
+                room.players.splice(playerIndex, 1);
+                
+                if (room.players.length === 0) {
+                    delete rooms[code];
+                } else {
+                    if (wasHost) {
+                        room.players[0].isHost = true;
+                    }
+                    io.to(code).emit('roomPlayersUpdate', { players: room.players });
+                    if (room.status === 'ingame' || room.status === 'voting') {
+                        io.to(code).emit('gameOver', { status: 'draw_disconnect', kickedName: 'Один из игроков вышел из сети.' });
+                        room.status = 'lobby';
+                    }
+                }
+                break;
             }
         }
     });
 });
 
-function sendChatUpdate(roomCode) {
+function processVotingResults(roomCode) {
     const room = rooms[roomCode];
     if (!room) return;
-    const activePlayer = room.players[room.activePlayerIdx];
-    io.to(roomCode).emit('chatUpdate', {
-        round: room.round,
-        step: room.step,
-        history: room.history,
-        activePlayerId: activePlayer ? activePlayer.id : null,
-        activePlayerName: activePlayer ? activePlayer.nickname : ""
-    });
-}
 
-function processVotes(roomCode) {
-    const room = rooms[roomCode];
-    let maxVotes = 0;
+    let maxVotes = -1;
     let kickedId = null;
     let isTie = false;
 
@@ -243,13 +245,14 @@ function processVotes(roomCode) {
         }
     }
 
-    // ЛОГИКА ПРОДОЛЖЕНИЯ ИГРЫ ПРИ СКИПЕ / НИЧЬЕЙ
     if (isTie || kickedId === 'skip') {
         room.round += 1;
         room.step = 1;
         room.status = 'ingame';
-        room.history = []; // Очищаем историю старого раунда под новые слова
+        room.history = []; 
         room.activePlayerIdx = Math.floor(Math.random() * room.players.length);
+        room.votedPlayers.clear();
+        room.votes = {};
 
         io.to(roomCode).emit('gameContinuedNextRound', { round: room.round });
         sendChatUpdate(roomCode);
@@ -257,28 +260,29 @@ function processVotes(roomCode) {
     }
 
     const kickedPlayer = room.players.find(p => p.id === kickedId);
-    const kickedRole = room.roles.find(r => r.id === kickedId);
+    const kickedRole = room.roles ? room.roles.find(r => r.id === kickedId) : null;
 
     if (!kickedPlayer || !kickedRole) {
         room.round += 1;
         room.step = 1;
         room.status = 'ingame';
         room.history = [];
+        room.votedPlayers.clear();
+        room.votes = {};
         io.to(roomCode).emit('gameContinuedNextRound', { round: room.round });
         sendChatUpdate(roomCode);
         return;
     }
 
     if (kickedRole.isSpy) {
-        io.to(roomCode).emit('gameOver', { status: 'citizens_win', reason: 'spy_caught', kickedName: kickedPlayer.nickname });
-        delete rooms[roomCode];
+        io.to(roomCode).emit('gameOver', { status: 'citizens_win', kickedName: kickedPlayer.nickname, word: room.location });
     } else {
-        io.to(roomCode).emit('gameOver', { status: 'spy_win', reason: 'wrong_vote', kickedName: kickedPlayer.nickname });
-        delete rooms[roomCode];
+        io.to(roomCode).emit('gameOver', { status: 'spy_win', kickedName: kickedPlayer.nickname, word: room.location });
     }
+    room.status = 'lobby';
 }
 
-const PORT = process.env.PORT || 10000;
+const PORT = process.env.PORT || 3000;
 server.listen(PORT, () => {
-    console.log(`Сервер шпиона запущен на порту ${PORT}`);
+    console.log(`Сервер запущен на порту ${PORT}`);
 });
