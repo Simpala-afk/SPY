@@ -37,7 +37,6 @@ function generateRoomCode() {
     return code;
 }
 
-// Вынесли функцию активации голосования в отдельный блок, чтобы вызывать её автоматически
 function activateVoting(roomCode) {
     const room = rooms[roomCode];
     if (!room) return;
@@ -108,6 +107,7 @@ io.on('connection', (socket) => {
 
         room.roles = roles;
         room.history = [];
+        room.round = 1;
         room.step = 1;
         room.activePlayerIdx = Math.floor(Math.random() * room.players.length);
 
@@ -122,24 +122,21 @@ io.on('connection', (socket) => {
         const activePlayer = room.players[room.activePlayerIdx];
         if (socket.id !== activePlayer.id) return; 
 
-        room.history.push({ nickname: activePlayer.nickname, word: data.word });
+        room.history.push({ nickname: activePlayer.nickname, word: data.text });
         
-        // Передаем ход следующему
         room.activePlayerIdx = (room.activePlayerIdx + 1) % room.players.length;
         room.step++;
 
-        // АВТОМАТИЧЕСКИЙ ПЕРЕХОД: если шагов сделано больше, чем игроков в комнате (круг завершен)
         if (room.step > room.players.length) {
-            sendChatUpdate(data.roomCode); // отправляем последнее слово, чтобы отобразилось
+            sendChatUpdate(data.roomCode); 
             setTimeout(() => {
-                activateVoting(data.roomCode); // Спустя 1.5 секунды автоматом включаем голосование
+                activateVoting(data.roomCode); 
             }, 1500);
         } else {
             sendChatUpdate(data.roomCode);
         }
     });
 
-    // Оставили ручной запуск на всякий случай, если админ захочет прервать игру раньше
     socket.on('startVoting', (data) => {
         activateVoting(data.roomCode);
     });
@@ -210,10 +207,16 @@ function processVotes(roomCode) {
         }
     }
 
-    // ИСПРАВЛЕНИЕ СКИПА: Проверяем ничью или выбор пропуска ДО того, как искать игрока в базе
+    // ЛОГИКА ПРОДОЛЖЕНИЯ ИГРЫ ПРИ СКИПЕ / НИЧЬЕЙ
     if (isTie || kickedId === 'skip') {
-        io.to(roomCode).emit('gameOver', { status: 'draw', reason: 'skip_or_tie' });
-        delete rooms[roomCode];
+        room.round += 1;
+        room.step = 1;
+        room.status = 'ingame';
+        room.history = []; // Очищаем историю старого раунда под новые слова
+        room.activePlayerIdx = Math.floor(Math.random() * room.players.length);
+
+        io.to(roomCode).emit('gameContinuedNextRound', { round: room.round });
+        sendChatUpdate(roomCode);
         return;
     }
 
@@ -221,18 +224,22 @@ function processVotes(roomCode) {
     const kickedRole = room.roles.find(r => r.id === kickedId);
 
     if (!kickedPlayer || !kickedRole) {
-        io.to(roomCode).emit('gameOver', { status: 'draw', reason: 'unknown' });
-        delete rooms[roomCode];
+        room.round += 1;
+        room.step = 1;
+        room.status = 'ingame';
+        room.history = [];
+        io.to(roomCode).emit('gameContinuedNextRound', { round: room.round });
+        sendChatUpdate(roomCode);
         return;
     }
 
     if (kickedRole.isSpy) {
         io.to(roomCode).emit('gameOver', { status: 'citizens_win', reason: 'spy_caught', kickedName: kickedPlayer.nickname });
+        delete rooms[roomCode];
     } else {
         io.to(roomCode).emit('gameOver', { status: 'spy_win', reason: 'wrong_vote', kickedName: kickedPlayer.nickname });
+        delete rooms[roomCode];
     }
-
-    delete rooms[roomCode];
 }
 
 const PORT = process.env.PORT || 10000;
