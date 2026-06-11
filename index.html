@@ -42,11 +42,13 @@
             <h1 class="text-4xl font-black tracking-wider text-transparent bg-clip-text bg-gradient-to-r from-red-500 to-orange-500">ШПИОН</h1>
             <p class="text-xs text-slate-500 uppercase tracking-widest mt-1 font-bold">Выберите режим игры</p>
         </div>
+  
         <div class="space-y-3">
             <button onclick="switchMode('offline')" class="w-full py-4 bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white font-black rounded-xl shadow-md active:scale-95 transition flex flex-col items-center justify-center">
                 <span>📱 Оффлайн режим</span>
                 <span class="text-[10px] font-normal opacity-80 mt-0.5">Играем на одном телефоне, передавая его из рук в руки</span>
             </button>
+    
             <button onclick="switchMode('online')" class="w-full py-4 bg-gradient-to-r from-red-500 to-orange-600 hover:from-red-600 hover:to-orange-700 text-white font-black rounded-xl shadow-md active:scale-95 transition flex flex-col items-center justify-center">
                 <span>🌐 Онлайн режим</span>
                 <span class="text-[10px] font-normal opacity-80 mt-0.5">Каждый играет со своего смартфона через интернет</span>
@@ -149,7 +151,6 @@
             <p class="text-xs text-slate-500 dark:text-slate-400 uppercase tracking-widest font-semibold">Код твоей комнаты</p>
             <div onclick="copyCode()" class="inline-flex items-center space-x-2 cursor-pointer bg-slate-100 dark:bg-slate-800/60 hover:bg-slate-200 px-4 py-1.5 rounded-xl mt-1.5 select-all active:scale-95 transition">
                 <h2 id="lobby-code-display" class="text-4xl font-black tracking-widest text-red-500 font-mono">XXXXX</h2>
-                <div class="w-full h-[1px] bg-gradient-to-r from-transparent via-slate-700 to-transparent my-4"></div>
             </div>
             <p id="copy-toast" class="text-[11px] text-emerald-500 font-bold mt-1 opacity-0 transition-opacity">📋 Код скопирован!</p>
             <p id="lobby-players-count" class="text-xs text-slate-400 font-medium">В комнате: 1 участников</p>
@@ -193,8 +194,7 @@
             </button>
         </div>
 
-        <div id="chat-messages" class="flex-1 bg-white dark:bg-slate-900 rounded-2xl border border-slate-100 dark:border-slate-800/60 p-3 overflow-y-auto space-y-2 text-xs shadow-inner min-h-[250px]">
-            </div>
+        <div id="chat-messages" class="flex-1 bg-white dark:bg-slate-900 rounded-2xl border border-slate-100 dark:border-slate-800/60 p-3 overflow-y-auto space-y-2 text-xs shadow-inner min-h-[250px]"></div>
 
         <div class="mt-2 space-y-2">
             <div id="chat-turn-indicator" class="text-[11px] font-bold text-center py-1 bg-slate-500/10 text-slate-400 rounded">
@@ -211,9 +211,7 @@
 
     <div id="round-alert-modal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm hidden transition-all duration-300">
         <div class="w-full max-w-sm p-6 bg-slate-900 border-2 border-amber-500/40 rounded-2xl text-center shadow-2xl transform scale-95 transition-all">
-            <div class="w-12 h-12 rounded-full bg-amber-500/10 text-amber-500 flex items-center justify-center mx-auto mb-3 text-xl animate-pulse">
-                🤝
-            </div>
+            <div class="w-12 h-12 rounded-full bg-amber-500/10 text-amber-500 flex items-center justify-center mx-auto mb-3 text-xl animate-pulse">🤝</div>
             <h3 class="text-lg font-black text-white mb-1">Никто не исключён!</h3>
             <p id="round-alert-text" class="text-xs text-slate-400 mb-4">Мнения разделились. Игра продолжается.</p>
             <button onclick="closeRoundModal()" class="w-full py-2.5 bg-gradient-to-r from-amber-500 to-orange-500 text-white font-bold rounded-xl text-xs active:scale-95 transition shadow-md shadow-orange-500/10">
@@ -235,6 +233,15 @@
             </div>
         </div>
         <div id="voting-players-list" class="space-y-2 max-h-40 overflow-y-auto"></div>
+        
+        <div id="spy-guess-panel" class="hidden p-3 border border-dashed border-amber-500 bg-amber-500/5 rounded-xl text-center space-y-2 shadow-inner">
+            <p class="text-[11px] font-black text-amber-500 uppercase tracking-wider">Вы — Шпион 🕵️‍♂️ Попытка угадать локацию:</p>
+            <div class="flex gap-1.5">
+                <input type="text" id="spy-guess-input" placeholder="Название локации..." class="w-2/3 px-2.5 py-1.5 rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 text-xs font-bold text-slate-900 dark:text-white focus:outline-none focus:border-amber-500">
+                <button onclick="sendSpyGuess()" class="w-1/3 py-1.5 bg-amber-500 text-white font-black rounded-lg text-xs hover:bg-amber-600 transition shadow-md shadow-amber-500/10">Назвать 🔔</button>
+            </div>
+        </div>
+
         <div class="pt-3 border-t border-slate-200 dark:border-slate-800 flex space-x-2">
             <button id="skip-vote-btn" onclick="selectSkipOnline()" class="w-1/2 py-3 bg-amber-500/10 text-amber-500 border border-amber-500/30 rounded-xl text-xs font-bold active:scale-95 transition">
                 ⏭️ Скип (Пропустить)
@@ -254,8 +261,7 @@
         <div id="result-box" class="p-6 rounded-2xl border-2"></div>
 
         <div class="grid grid-cols-2 gap-3">
-            <button onclick="location.reload()" class="py-3 bg-slate-800 hover:bg-slate-700 text-white text-xs font-bold rounded-xl active:scale-95 transition">🔄 Меню</button>
-            <!-- Кнопка возврата в лобби -->
+            <button onclick="location.reload()" class="py-3 bg-slate-800 hover:bg-slate-700 text-white text-xs font-bold rounded-xl active:scale-95 transition">🔄  Меню</button>
             <button onclick="backToLobby()" class="py-3 bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold rounded-xl active:scale-95 transition shadow-lg shadow-indigo-500/20">🏠 В лобби</button>
         </div>
     </div>
@@ -282,129 +288,141 @@
     </div>
 
     <script>
-        // БАЗА ДАННЫХ ВСЕХ ТВОИХ ОФФЛАЙН ЛОКАЦИЙ ИЗ ОРИГИНАЛА
         const locationsDb = {
             base: ["Орбитальная станция", "Подводная лодка", "Киностудия", "Банк", "Пиратский корабль", "Театр", "Полярная станция"],
             hollywood: ["Павильон Марвел", "Красная дорожка", "Гримерная", "Студия дубляжа", "Оскар церемония"],
             corporation: ["Бухгалтерия", "Кабинет директора", "Переговорка", "Курилка", "Кофе-поинт"],
             chill: ["Пляжный бар", "Шезлонг", "Бассейн с подогревом", "Яхта олигарха", "Аквапарк"]
         };
-        const themeTitles = { base: "Базовая подборка", hollywood: "Голливуд / Фильмы", corporation: "Корпорация / Офис", chill: "На чиле / Курорт" };
-        let currentAppMode = null; // 'offline' или 'online'
+        const themeTitles = {
+            base: "Базовая подборка",
+            hollywood: "Голливуд / Фильмы",
+            corporation: "Корпорация / Офис",
+            chill: "На чиле / Курорт"
+        };
+
+        let currentMode = null;
+        let offlineState = { playerCount: 4, spyCount: 1, timerMinutes: 5, theme: 'all', players: [], currentIdx: 0, timerId: null, timeLeft: 0 };
         
-        // ЖЕСТКОЕ ПОДКЛЮЧЕНИЕ К СЕРВЕРУ НА RENDER
-        const socket = io('https://spy-0k8x.onrender.com');
+        // Переменные онлайн режима
+        const SERVER_URL = 'http://192.168.0.102:3000'; // ТВОЙ IP-АДРЕС СЕРВЕРА
+        let socket = null;
+        let roomCode = null;
+        let myName = null;
+        let myRole = null; // Хранит роль текущего игрока ('ШПИОН' или локацию)
+        let isHost = false;
+        let selectedVoteTarget = null;
 
-        // Переключение ночной темы
-        function toggleTheme() { document.documentElement.classList.toggle('dark'); }
+        function toggleTheme() {
+            const html = document.documentElement;
+            if(html.classList.contains('dark')) {
+                html.classList.remove('dark');
+                localStorage.setItem('theme', 'light');
+            } else {
+                html.classList.add('dark');
+                localStorage.setItem('theme', 'dark');
+            }
+        }
+        if(localStorage.getItem('theme') === 'light') document.documentElement.classList.remove('dark');
 
-        // Роутинг менюшек
         function switchMode(mode) {
-            currentAppMode = mode;
+            currentMode = mode;
             document.getElementById('mode-selection-screen').classList.add('hidden');
             if(mode === 'offline') {
                 document.getElementById('setup-screen-offline').classList.remove('hidden');
             } else {
                 document.getElementById('setup-screen-online').classList.remove('hidden');
+                initSocketConnection();
             }
         }
+
         function backToMainMenu() {
             document.getElementById('setup-screen-offline').classList.add('hidden');
             document.getElementById('setup-screen-online').classList.add('hidden');
             document.getElementById('mode-selection-screen').classList.remove('hidden');
+            currentMode = null;
         }
 
-        // =========================================================
-        // =============== ЛОГИКА 1. ОФФЛАЙН РЕЖИМА ================
-        // =========================================================
-        let stateOff = { players: [], currentIndex: 0, timerInterval: null, timeLeft: 0, location: "" };
         function showLocationsModal() {
-            const container = document.getElementById('locations-modal-list');
-            container.innerHTML = "";
-            for (let theme in locationsDb) {
-                const section = document.createElement('div');
-                section.innerHTML = `
-                    <h4 class="text-slate-400 border-b border-slate-200 dark:border-slate-800 pb-1 mb-2 uppercase text-xs tracking-wider font-bold">${themeTitles[theme]}</h4>
-                    <ul class="grid grid-cols-2 gap-1">${locationsDb[theme].map(loc => `<li class="py-1 px-2 bg-slate-50 dark:bg-slate-800/40 rounded border border-slate-200 dark:border-slate-800/50 text-[11px] font-medium">${loc}</li>`).join('')}</ul>
-                `;
-                container.appendChild(section);
-            }
             const modal = document.getElementById('locations-modal');
-            modal.classList.remove('modal-hidden'); modal.classList.add('modal-active');
+            const container = document.getElementById('locations-modal-list');
+            container.innerHTML = '';
+            for(let key in locationsDb) {
+                let div = document.createElement('div');
+                div.className = "space-y-1.5";
+                div.innerHTML = `<h4 class="text-xs font-black text-red-500 uppercase tracking-wider">${themeTitles[key]}</h4><p class="text-xs text-slate-500 dark:text-slate-300 font-medium leading-relaxed">${locationsDb[key].join(', ')}</p>`;
+                container.appendChild(div);
+            }
+            modal.classList.remove('modal-hidden');
+            modal.classList.add('modal-active');
         }
         function closeModal() {
             const modal = document.getElementById('locations-modal');
-            modal.classList.remove('modal-active'); modal.classList.add('modal-hidden');
-        }
-        function triggerCustomConfirm() {
-            document.getElementById('custom-confirm-modal').classList.remove('modal-hidden');
-            document.getElementById('custom-confirm-modal').classList.add('modal-active');
-        }
-        function closeCustomConfirm() {
-            document.getElementById('custom-confirm-modal').classList.remove('modal-active');
-            document.getElementById('custom-confirm-modal').classList.add('modal-hidden');
-        }
-        function executeExitGameOffline() {
-            if(stateOff.timerInterval) clearInterval(stateOff.timerInterval);
-            location.reload();
+            modal.classList.remove('modal-active');
+            modal.classList.add('modal-hidden');
         }
 
+        // ОФФЛАЙН ЛОГИКА
         function startOfflineGame() {
-            const pCount = parseInt(document.getElementById('player-count-off').value);
-            const sCount = parseInt(document.getElementById('spy-count-off').value);
-            const theme = document.getElementById('theme-select-off').value;
-            
-            if(sCount >= pCount - 1) { alert("Шпионов не может быть больше, чем мирных!"); return; }
+            offlineState.playerCount = parseInt(document.getElementById('player-count-off').value);
+            offlineState.spyCount = parseInt(document.getElementById('spy-count-off').value);
+            offlineState.timerMinutes = parseInt(document.getElementById('timer-count-off').value);
+            offlineState.theme = document.getElementById('theme-select-off').value;
 
-            // Выбор пула локаций
-            let pool = [];
-            if(theme === 'all') {
-                for(let t in locationsDb) pool = pool.concat(locationsDb[t]);
-            } else {
-                pool = locationsDb[theme];
+            if(offlineState.spyCount >= offlineState.playerCount) {
+                alert('Шпионов не должно быть больше или столько же, сколько игроков!');
+                return;
             }
-            stateOff.location = pool[Math.floor(Math.random() * pool.length)];
-            // Создаем массив игроков
-            stateOff.players = Array(pCount).fill().map((_, i) => ({ id: i + 1, isSpy: false }));
-            // Расставляем шпионов случайным образом
-            let assignedSpies = 0;
-            while(assignedSpies < sCount) {
-                let rIdx = Math.floor(Math.random() * pCount);
-                if(!stateOff.players[rIdx].isSpy) {
-                    stateOff.players[rIdx].isSpy = true;
-                    assignedSpies++;
+
+            let pool = [];
+            if(offlineState.theme === 'all') {
+                for(let k in locationsDb) pool = pool.concat(locationsDb[k]);
+            } else {
+                pool = locationsDb[offlineState.theme];
+            }
+            let targetLocation = pool[Math.floor(Math.random() * pool.length)];
+
+            let roles = [];
+            for(let i=0; i<offlineState.playerCount; i++) roles.push(targetLocation);
+            
+            let spiesPlaced = 0;
+            while(spiesPlaced < offlineState.spyCount) {
+                let rIdx = Math.floor(Math.random() * roles.length);
+                if(roles[rIdx] !== 'ШПИОН') {
+                    roles[rIdx] = 'ШПИОН';
+                    spiesPlaced++;
                 }
             }
 
-            stateOff.currentIndex = 0;
-            stateOff.timeLeft = parseInt(document.getElementById('timer-count-off').value) * 60;
+            offlineState.players = roles;
+            offlineState.currentIdx = 0;
 
             document.getElementById('setup-screen-offline').classList.add('hidden');
             document.getElementById('card-screen-offline').classList.remove('hidden');
-            renderOfflineCard();
+            setupOfflineCardView();
         }
 
-        function renderOfflineCard() {
+        function setupOfflineCardView() {
             document.getElementById('card-off').classList.remove('flipped');
-            document.getElementById('player-turn-title-off').innerText = `Игрок ${stateOff.players[stateOff.currentIndex].id}, открой карту`;
+            document.getElementById('player-turn-title-off').innerText = `Игрок ${offlineState.currentIdx + 1}, возьми телефон`;
             
-            const p = stateOff.players[stateOff.currentIndex];
-            const face = document.getElementById('card-face-content-off');
-            if(p.isSpy) {
-                face.className = "card-face back absolute inset-0 bg-gradient-to-br from-red-100 to-slate-900 text-center border-2 border-red-500 flex flex-col items-center justify-center p-6";
-                face.innerHTML = `<div class="text-xs uppercase text-red-500 font-bold tracking-wider">Роль:</div><div class="text-4xl font-black text-red-600">ШПИОН 🕵️‍♂️</div><p class="text-[11px] text-slate-400 mt-2">Вычисляй мирных по вопросам, твоя задача не выдать себя!</p>`;
+            const backFace = document.getElementById('card-face-content-off');
+            let userRole = offlineState.players[offlineState.currentIdx];
+
+            if(userRole === 'ШПИОН') {
+                backFace.className = "card-face back absolute inset-0 rounded-2xl flex flex-col items-center justify-center p-6 text-center border-2 border-red-500 bg-red-500/10";
+                backFace.innerHTML = `<h3 class="text-3xl font-black text-red-500 mb-2">ТЫ ШПИОН 🕵️‍♂️</h3><p class="text-xs text-slate-400 max-w-[200px] leading-relaxed">Твоя задача — не выдать себя и узнать тайную локацию мирных!</p>`;
             } else {
-                face.className = "card-face back absolute inset-0 bg-gradient-to-br from-emerald-50 to-slate-800 text-center border-2 border-emerald-500 flex flex-col items-center justify-center p-6";
-                face.innerHTML = `<div class="text-xs uppercase text-emerald-400 font-bold tracking-wider">Вы мирный житель. Локация:</div><div class="text-2xl font-black text-white bg-slate-800 px-4 py-2 mt-2 border border-slate-700 rounded-xl shadow">${stateOff.location}</div>`;
+                backFace.className = "card-face back absolute inset-0 rounded-2xl flex flex-col items-center justify-center p-6 text-center border-2 border-emerald-500 bg-emerald-500/10";
+                backFace.innerHTML = `<p class="text-xs font-bold text-emerald-500 uppercase tracking-widest mb-1">Локация раунда</p><h3 class="text-2xl font-black text-slate-800 dark:text-white">${userRole}</h3><p class="text-[10px] text-slate-400 mt-3">Вычисляйте шпиона наводящими вопросами!</p>`;
             }
         }
 
         function nextOfflinePlayer() {
-            stateOff.currentIndex++;
-            if(stateOff.currentIndex < stateOff.players.length) {
-                renderOfflineCard();
+            offlineState.currentIdx++;
+            if(offlineState.currentIdx < offlineState.players.length) {
+                setupOfflineCardView();
             } else {
-                // Все посмотрели роли — запускаем таймер
                 document.getElementById('card-screen-offline').classList.add('hidden');
                 document.getElementById('game-screen-offline').classList.remove('hidden');
                 startOfflineTimer();
@@ -412,72 +430,257 @@
         }
 
         function startOfflineTimer() {
-            const display = document.getElementById('timer-display-off');
-            stateOff.timerInterval = setInterval(() => {
-                let m = Math.floor(stateOff.timeLeft / 60);
-                let s = stateOff.timeLeft % 60;
-                display.innerText = `${m.toString().padStart(2,'0')}:${s.toString().padStart(2,'0')}`;
-                if(stateOff.timeLeft <= 0) {
-                    clearInterval(stateOff.timerInterval);
-                    display.innerText = "ВРЕМЯ ВЫШЛО!";
-                    alert("Время на обсуждение вышло! Пора голосовать и раскрывать шпиона!");
+            offlineState.timeLeft = offlineState.timerMinutes * 60;
+            updateOfflineTimerUI();
+            offlineState.timerId = setInterval(() => {
+                offlineState.timeLeft--;
+                updateOfflineTimerUI();
+                if(offlineState.timeLeft <= 0) {
+                    clearInterval(offlineState.timerId);
+                    alert('Время раунда вышло! Переходите к общему голосованию.');
                 }
-                stateOff.timeLeft--;
             }, 1000);
         }
 
-        // =========================================================
-        // =============== ЛОГИКА 2. ОНЛАЙН РЕЖИМА =================
-        // =========================================================
-       let myRoomCode = '';
-        let myId = '';
-        let roomDataCache = null;
-        let selectedSuspectId = null;
+        function updateOfflineTimerUI() {
+            let m = Math.floor(offlineState.timeLeft / 60).toString().padStart(2, '0');
+            let s = (offlineState.timeLeft % 60).toString().padStart(2, '0');
+            document.getElementById('timer-display-off').innerText = `${m}:${s}`;
+        }
+
+        function triggerCustomConfirm() {
+            let m = document.getElementById('custom-confirm-modal');
+            m.classList.remove('modal-hidden'); m.classList.add('modal-active');
+        }
+        function closeCustomConfirm() {
+            let m = document.getElementById('custom-confirm-modal');
+            m.classList.remove('modal-active'); m.classList.add('modal-hidden');
+        }
+        function executeExitGameOffline() {
+            clearInterval(offlineState.timerId);
+            closeCustomConfirm();
+            document.getElementById('game-screen-offline').classList.add('hidden');
+            document.getElementById('mode-selection-screen').classList.remove('hidden');
+        }
+
+        // ОНЛАЙН ЛОГИКА (SOCKET.IO)
+        function initSocketConnection() {
+            if (socket) return;
+            socket = io(SERVER_URL);
+
+            socket.on('roomCreated', (code) => {
+                roomCode = code;
+                isHost = true;
+                document.getElementById('setup-screen-online').classList.add('hidden');
+                document.getElementById('online-lobby-screen').classList.remove('hidden');
+                document.getElementById('lobby-code-display').innerText = code;
+                document.getElementById('host-settings-block').classList.remove('hidden');
+            });
+
+            socket.on('roomJoined', (code) => {
+                roomCode = code;
+                isHost = false;
+                document.getElementById('setup-screen-online').classList.add('hidden');
+                document.getElementById('online-lobby-screen').classList.remove('hidden');
+                document.getElementById('lobby-code-display').innerText = code;
+                document.getElementById('player-waiting-block').classList.remove('hidden');
+            });
+
+            socket.on('updatePlayers', (players) => {
+                document.getElementById('lobby-players-count').innerText = `В комнате: ${players.length} участников`;
+                const list = document.getElementById('lobby-players-list');
+                list.innerHTML = '';
+                players.forEach(p => {
+                    let div = document.createElement('div');
+                    div.className = "flex justify-between items-center bg-white dark:bg-slate-900 p-2 rounded-lg border text-xs font-bold";
+                    div.innerHTML = `<span>👤 ${p.name}</span>${p.isHost ? '<span class="text-[9px] bg-red-500 text-white px-1.5 py-0.5 rounded-md">ХОСТ</span>':''}`;
+                    list.appendChild(div);
+                });
+            });
+
+            socket.on('gameStarted', (roleData) => {
+                myRole = roleData.role; 
+                document.getElementById('online-lobby-screen').classList.add('hidden');
+                document.getElementById('online-card-screen').classList.remove('hidden');
+                
+                document.getElementById('secret-card').classList.remove('flipped');
+                const cardFace = document.getElementById('secret-card-face');
+                const locLabel = document.getElementById('game-my-loc');
+
+                if(myRole === 'ШПИОН') {
+                    cardFace.className = "card-face back absolute inset-0 rounded-2xl flex flex-col items-center justify-center p-6 text-center border-2 border-red-500 bg-red-500/10";
+                    cardFace.innerHTML = `<h3 class="text-3xl font-black text-red-500 mb-1">ТЫ ШПИОН 🕵️‍♂️</h3><p class="text-xs text-slate-400 leading-relaxed">Запутывай мирных жителей и отгадай скрытую локацию!</p>`;
+                    locLabel.innerText = "🕵️‍♂️ Неизвестно (Вы Шпион)";
+                    locLabel.className = "font-bold text-red-500 animate-pulse";
+                } else {
+                    cardFace.className = "card-face back absolute inset-0 rounded-2xl flex flex-col items-center justify-center p-6 text-center border-2 border-emerald-500 bg-emerald-500/10";
+                    cardFace.innerHTML = `<p class="text-xs font-bold text-emerald-500 uppercase tracking-widest mb-0.5">Тайная локация</p><h3 class="text-2xl font-black text-slate-800 dark:text-white">${myRole}</h3>`;
+                    locLabel.innerText = myRole;
+                    locLabel.className = "font-bold text-emerald-500";
+                }
+            });
+
+            socket.on('updateChat', (data) => {
+                const box = document.getElementById('chat-messages');
+                box.innerHTML = '';
+                data.history.forEach(msg => {
+                    let p = document.createElement('div');
+                    p.className = "p-2 rounded-xl border bg-slate-50 dark:bg-slate-950 flex flex-col";
+                    p.innerHTML = `<div class="flex justify-between font-bold text-[10px] text-slate-400"><span>👤 ${msg.name}</span><span>Раунд ${msg.round} | Шаг ${msg.step}</span></div><p class="mt-0.5 font-bold text-slate-800 dark:text-slate-100">${msg.word}</p>`;
+                    box.appendChild(p);
+                });
+                box.scrollTop = box.scrollHeight;
+
+                document.getElementById('game-round-title').innerText = `Раунд ${data.round} | Ход ${data.step}`;
+                
+                const activePlayer = data.activePlayer;
+                const turnIndicator = document.getElementById('chat-turn-indicator');
+                const inp = document.getElementById('chat-input');
+                const btn = document.getElementById('chat-send-btn');
+
+                if(activePlayer.id === socket.id) {
+                    turnIndicator.innerText = "🔴 ТВОЙ ХОД! Напиши ассоциацию или слово:";
+                    turnIndicator.className = "text-[11px] font-black text-center py-1 bg-red-500/10 text-red-500 rounded animate-pulse";
+                    inp.disabled = false;
+                    inp.placeholder = "Введите ваше слово здесь...";
+                    btn.disabled = false;
+                    btn.className = "px-4 bg-emerald-500 text-white rounded-lg font-bold text-xs hover:bg-emerald-600 transition";
+                } else {
+                    turnIndicator.innerText = `Ожидание хода: ${activePlayer.name}...`;
+                    turnIndicator.className = "text-[11px] font-bold text-center py-1 bg-slate-500/10 text-slate-400 rounded";
+                    inp.disabled = true;
+                    inp.value = '';
+                    inp.placeholder = "Ожидайте своей очереди...";
+                    btn.disabled = true;
+                    btn.className = "px-3 bg-slate-300 text-slate-500 rounded-lg font-bold text-xs cursor-not-allowed transition";
+                }
+            });
+
+            socket.on('openVoting', (players) => {
+                document.getElementById('game-screen-online').classList.add('hidden');
+                document.getElementById('voting-screen-online').classList.remove('hidden');
+                
+                // Очистка старого ввода шпиона при входе в экран голосования
+                document.getElementById('spy-guess-input').value = '';
+
+                // ЕСЛИ ТЕКУЩИЙ ИГРОК ШПИОН — ОТКРЫВАЕМ СЕКРЕТНУЮ ПАНЕЛЬ ДЛЯ ТЕКСТОВОГО ОВЕРЛЕЯ
+                const spyPanel = document.getElementById('spy-guess-panel');
+                if (myRole === 'ШПИОН') {
+                    spyPanel.classList.remove('hidden');
+                } else {
+                    spyPanel.classList.add('hidden');
+                }
+
+                document.getElementById('voting-messages').innerHTML = '';
+                const listContainer = document.getElementById('voting-players-list');
+                listContainer.innerHTML = '';
+                
+                selectedVoteTarget = null;
+                document.getElementById('submit-vote-btn').disabled = true;
+                document.getElementById('submit-vote-btn').className = "w-1/2 py-3 bg-slate-300 text-slate-500 rounded-xl text-xs font-bold cursor-not-allowed";
+
+                players.forEach(p => {
+                    if(p.id === socket.id) return; 
+                    let btn = document.createElement('button');
+                    btn.id = `vote-target-${p.id}`;
+                    btn.onclick = () => selectVoteTargetOnline(p.id);
+                    btn.className = "w-full py-2.5 px-4 bg-white dark:bg-slate-900 border-2 border-slate-200 dark:border-slate-800 rounded-xl text-xs font-bold text-left flex justify-between items-center active:scale-[0.99] transition";
+                    btn.innerHTML = `<span>👤 ${p.name}</span><span id="vote-badge-${p.id}" class="text-[9px] font-bold text-slate-400 uppercase">Выбрать</span>`;
+                    listContainer.appendChild(btn);
+                });
+            });
+
+            socket.on('updateVotingChat', (history) => {
+                const container = document.getElementById('voting-messages');
+                container.innerHTML = '';
+                history.forEach(m => {
+                    let p = document.createElement('p');
+                    p.innerHTML = `<span class="font-black text-red-500">${m.name}:</span> ${m.text}`;
+                    container.appendChild(p);
+                });
+                container.scrollTop = container.scrollHeight;
+            });
+
+            socket.on('gameContinuedNextRound', (data) => {
+                document.getElementById('voting-screen-online').classList.add('hidden');
+                let modal = document.getElementById('round-alert-modal');
+                document.getElementById('round-alert-text').innerText = `Мнения разделились или большинство нажали скип. Никто не вылетел! Начинается раунд ${data.round}.`;
+                modal.classList.remove('hidden');
+            });
+
+            socket.on('gameOver', (data) => {
+                document.getElementById('voting-screen-online').classList.add('hidden');
+                document.getElementById('game-screen-online').classList.add('hidden');
+                document.getElementById('result-screen').classList.remove('hidden');
+                
+                const box = document.getElementById('result-box');
+                
+                if (data.status === 'citizens_win') {
+                    box.className = "p-5 rounded-2xl border-2 border-emerald-500 bg-emerald-50 dark:bg-emerald-950/20";
+                    box.innerHTML = `<h3 class="text-xl font-black text-emerald-600 mb-1">Мирные победили! 🎉</h3><p class="text-xs text-slate-500 dark:text-slate-400">Был пойман шпион: <span class="font-bold text-slate-800 dark:text-white">${data.kickedName}</span></p><p class="text-[10px] text-slate-400 mt-2">Локация действительно была: <b>${data.actualLocation}</b></p>`;
+                } else if (data.status === 'spy_win_guess') {
+                    box.className = "p-5 rounded-2xl border-2 border-amber-500 bg-amber-50 dark:bg-amber-950/20";
+                    box.innerHTML = `<h3 class="text-xl font-black text-amber-600 mb-1">Шпион победил! 🕵️‍♂️🔥</h3><p class="text-xs text-slate-500 dark:text-slate-400">Шпион <span class="font-bold text-slate-800 dark:text-white">${data.kickedName}</span> вскрылся и правильно угадал локацию: <span class="font-bold text-amber-500">${data.actualLocation}</span>!</p>`;
+                } else if (data.status === 'citizens_win_spy_mistake') {
+                    box.className = "p-5 rounded-2xl border-2 border-emerald-500 bg-emerald-50 dark:bg-emerald-950/20";
+                    box.innerHTML = `<h3 class="text-xl font-black text-emerald-600 mb-1">Мирные победили! 🔔</h3><p class="text-xs text-slate-500 dark:text-slate-400">Шпион <span class="font-bold text-slate-800 dark:text-white">${data.kickedName}</span> попытался угадать локацию, но ошибся! Он думал, что это "${data.guessWord}", а правильный ответ: <span class="font-bold text-emerald-600">${data.actualLocation}</span>.</p>`;
+                } else {
+                    box.className = "p-5 rounded-2xl border-2 border-red-500 bg-red-50 dark:bg-red-950/20";
+                    box.innerHTML = `<h3 class="text-xl font-black text-red-600 mb-1">Шпион победил! 🕵️‍♂️</h3><p class="text-xs text-slate-500 dark:text-slate-400">Выгнали мирного жителя: <span class="font-bold text-slate-800 dark:text-white">${data.kickedName}</span>. Шпион остался нераскрытым!</p><p class="text-[10px] text-slate-400 mt-2">Секретная локация: <b>${data.actualLocation}</b></p>`;
+                }
+            });
+
+            socket.on('error', (msg) => { alert(msg); });
+        }
 
         function validateMenuOnline() {
-            const nickname = document.getElementById('online-nickname').value.trim();
+            const name = document.getElementById('online-nickname').value.trim();
             const code = document.getElementById('online-code-input').value.trim();
+            
             const btnCreate = document.getElementById('btn-create-lobby');
-            const btnJoin = document.getElementById('btn-join-lobby');
-            if (nickname.length > 0) {
+            if(name.length > 0) {
                 btnCreate.disabled = false;
-                btnCreate.className = "w-full py-3.5 bg-gradient-to-r from-red-500 to-orange-500 text-white rounded-xl font-bold active:scale-95 transition shadow-md cursor-pointer";
-                if (code.length >= 3) {
-                    btnJoin.disabled = false;
-                    btnJoin.className = "w-1/2 py-3 bg-red-600 text-white rounded-xl font-bold active:scale-95 transition text-sm shadow-md cursor-pointer";
-                } else {
-                    btnJoin.disabled = true;
-                    btnJoin.className = "w-1/2 py-3 bg-slate-300 dark:bg-slate-700 text-slate-500 rounded-xl font-bold text-sm cursor-not-allowed";
-                }
+                btnCreate.className = "w-full py-3.5 bg-gradient-to-r from-red-500 to-orange-500 text-white rounded-xl font-black shadow-md active:scale-95 transition-all cursor-pointer";
             } else {
                 btnCreate.disabled = true;
-                btnCreate.className = "w-full py-3.5 bg-slate-300 dark:bg-slate-700 text-slate-500 rounded-xl font-bold cursor-not-allowed";
+                btnCreate.className = "w-full py-3.5 bg-slate-300 dark:bg-slate-700 text-slate-500 dark:text-slate-400 rounded-xl font-bold transition-all cursor-not-allowed";
+            }
+
+            const btnJoin = document.getElementById('btn-join-lobby');
+            if(name.length > 0 && code.length === 5) {
+                btnJoin.disabled = false;
+                btnJoin.className = "w-1/2 py-3 bg-red-500 text-white rounded-xl font-black shadow-md active:scale-95 transition-all text-sm cursor-pointer";
+            } else {
                 btnJoin.disabled = true;
-                btnJoin.className = "w-1/2 py-3 bg-slate-300 dark:bg-slate-700 text-slate-500 rounded-xl font-bold text-sm cursor-not-allowed";
+                btnJoin.className = "w-1/2 py-3 bg-slate-300 dark:bg-slate-700 text-slate-500 dark:text-slate-400 rounded-xl font-bold transition-all text-sm cursor-not-allowed";
             }
         }
 
         function createLobby() {
-            const nickname = document.getElementById('online-nickname').value.trim();
-            socket.emit('createRoom', { nickname });
+            myName = document.getElementById('online-nickname').value.trim();
+            socket.emit('createRoom', { name: myName });
         }
 
         function joinLobby() {
-            const nickname = document.getElementById('online-nickname').value.trim();
-            const roomCode = document.getElementById('online-code-input').value.trim().toUpperCase();
-            socket.emit('joinRoom', { roomCode, nickname });
+            myName = document.getElementById('online-nickname').value.trim();
+            const code = document.getElementById('online-code-input').value.trim().toUpperCase();
+            socket.emit('joinRoom', { code: code, name: myName });
         }
 
         function copyCode() {
-            navigator.clipboard.writeText(myRoomCode).then(() => {
+            const code = document.getElementById('lobby-code-display').innerText;
+            navigator.clipboard.writeText(code).then(() => {
                 const toast = document.getElementById('copy-toast');
-                toast.classList.remove('opacity-0');
-                setTimeout(() => toast.classList.add('opacity-0'), 1500);
+                toast.classList.remove('opacity-0'); toast.classList.add('opacity-100');
+                setTimeout(() => {
+                    toast.classList.remove('opacity-100'); toast.classList.add('opacity-0');
+                }, 2000);
             });
         }
 
         function startGameOnline() {
-            socket.emit('startGame', { roomCode: myRoomCode });
+            if(!isHost) return;
+            socket.emit('startGame', { code: roomCode });
         }
 
         function confirmCardReadOnline() {
@@ -485,228 +688,92 @@
             document.getElementById('game-screen-online').classList.remove('hidden');
         }
 
-        // ИСПРАВЛЕННАЯ ВАЛИДАЦИЯ ДЛЯ ТЕЛЕФОНА: Разрешаем писать целые фразы до 10 слов
         function validateWordInput(input) {
-            const text = input.value.trim();
-            const sendBtn = document.getElementById('chat-send-btn');
-            
-            if (text.length === 0) {
-                sendBtn.disabled = true;
-                sendBtn.className = "px-3 bg-slate-300 text-slate-500 rounded-lg font-bold text-xs cursor-not-allowed";
-                return;
-            }
-
-            const wordsCount = text.split(/\s+/).length;
-
-            if (wordsCount > 10) {
-                sendBtn.disabled = true;
-                sendBtn.className = "px-3 bg-red-500 text-white rounded-lg font-bold text-xs cursor-not-allowed";
-                input.placeholder = "Максимум 10 слов!";
+            const btn = document.getElementById('chat-send-btn');
+            if(input.value.trim().length > 0) {
+                btn.className = "px-4 bg-emerald-500 text-white rounded-lg font-bold text-xs hover:bg-emerald-600 transition shadow-md";
             } else {
-                sendBtn.disabled = false;
-                sendBtn.className = "px-3 bg-emerald-500 text-white rounded-lg font-bold text-xs shadow cursor-pointer";
+                btn.className = "px-3 bg-slate-300 text-slate-500 rounded-lg font-bold text-xs cursor-not-allowed transition";
             }
         }
 
         function sendWordOnline() {
             const input = document.getElementById('chat-input');
-            const text = input.value.trim();
-            if (!text) return;
-            
-            const wordsCount = text.split(/\s+/).length;
-            if (wordsCount > 10) return;
-
-            socket.emit('chatWord', { roomCode: myRoomCode, text: text });
-            input.value = "";
-            validateWordInput(input);
-        }
-
-        function selectSkipOnline() {
-            document.querySelectorAll('.vote-p-btn').forEach(b => {
-                b.className = "w-full py-2.5 px-4 text-left font-bold rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/50 vote-p-btn text-xs";
-            });
-            selectedSuspectId = 'skip';
-            document.getElementById('skip-vote-btn').className = "w-1/2 py-3 bg-amber-500 text-white rounded-xl text-xs font-bold shadow-md scale-95 transition";
-            socket.emit('submitVote', { roomCode: myRoomCode, suspectId: 'skip' });
-            
-            document.getElementById('submit-vote-btn').disabled = true;
-            document.getElementById('submit-vote-btn').className = "w-1/2 py-3 bg-slate-300 text-slate-500 rounded-xl text-xs font-bold cursor-not-allowed";
-            document.getElementById('skip-vote-btn').disabled = true;
-        }
-
-        function selectSuspectOnline(id, btn) {
-            document.querySelectorAll('.vote-p-btn').forEach(b => {
-                b.className = "w-full py-2.5 px-4 text-left font-bold rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/50 vote-p-btn text-xs";
-            });
-            document.getElementById('skip-vote-btn').className = "w-1/2 py-3 bg-amber-500/10 text-amber-500 border border-amber-500/30 rounded-xl text-xs font-bold active:scale-95 transition";
-            
-            selectedSuspectId = id;
-            btn.className = "w-full py-2.5 px-4 text-left font-bold rounded-xl border-2 border-red-500 bg-red-50/50 dark:bg-red-950/30 text-red-500 dark:text-red-400 vote-p-btn text-xs shadow-sm";
-            socket.emit('submitVote', { roomCode: myRoomCode, suspectId: id });
-            
-            document.getElementById('submit-vote-btn').disabled = true;
-            document.getElementById('skip-vote-btn').disabled = true;
-            document.querySelectorAll('.vote-p-btn').forEach(b => b.disabled = true);
+            const word = input.value.trim();
+            if(!word) return;
+            socket.emit('sendWord', { code: roomCode, word: word });
+            input.value = '';
         }
 
         function sendVotingMessageOnline() {
-            const input = document.getElementById('voting-input');
-            const msg = input.value.trim();
-            if(!msg) return;
-            socket.emit('votingChatMsg', { roomCode: myRoomCode, msg });
-            input.value = "";
+            const inp = document.getElementById('voting-input');
+            const txt = inp.value.trim();
+            if(!txt) return;
+            socket.emit('sendVotingMessage', { code: roomCode, text: txt });
+            inp.value = '';
         }
 
-        // =========================================================
-        // ============= СЕТЕВЫЕ СОБЫТИЯ SOCKET.IO =================
-        // =========================================================
-
-        socket.on('roomCreated', (data) => {
-            myRoomCode = data.roomCode;
-            myId = data.playerId;
-            document.getElementById('lobby-code-display').innerText = myRoomCode;
-            document.getElementById('setup-screen-online').classList.add('hidden');
-            document.getElementById('online-lobby-screen').classList.remove('hidden');
-            document.getElementById('host-settings-block').classList.remove('hidden');
-            document.getElementById('player-waiting-block').classList.add('hidden');
-        });
-
-        socket.on('roomJoined', (data) => {
-            myRoomCode = data.roomCode;
-            myId = data.playerId;
-            document.getElementById('lobby-code-display').innerText = myRoomCode;
-            document.getElementById('setup-screen-online').classList.add('hidden');
-            document.getElementById('online-lobby-screen').classList.remove('hidden');
-            document.getElementById('host-settings-block').classList.add('hidden');
-            document.getElementById('player-waiting-block').classList.remove('hidden');
-        });
-
-        socket.on('roomPlayersUpdate', (data) => {
-            document.getElementById('lobby-players-count').innerText = `В комнате: ${data.players.length} участников`;
-            const list = document.getElementById('lobby-players-list');
-            list.innerHTML = data.players.map(p => `
-                <div class="flex justify-between items-center py-1.5 px-3 bg-white dark:bg-slate-900 rounded-lg border border-slate-100 dark:border-slate-800/60 shadow-sm">
-                    <span class="text-xs font-bold text-slate-700 dark:text-slate-300">${p.nickname} ${p.id === myId ? '(Ты)' : ''}</span>
-                    ${p.isHost ? '<span class="text-[9px] bg-amber-500/20 text-amber-500 font-extrabold px-1.5 py-0.5 rounded uppercase tracking-wider">Хост</span>' : '<span class="text-[9px] bg-slate-100 dark:bg-slate-800 text-slate-400 font-bold px-1.5 py-0.5 rounded">Игрок</span>'}
-                </div>
-            `).join('');
-        });
-
-        socket.on('gameStarted', (data) => {
-            roomDataCache = data;
-            const myRole = data.roles.find(r => r.id === myId);
-            
-            document.getElementById('online-lobby-screen').classList.add('hidden');
-            document.getElementById('online-card-screen').classList.remove('hidden');
-            document.getElementById('secret-card').classList.remove('flipped');
-            
-            const cardFace = document.getElementById('secret-card-face');
-            if (myRole.isSpy) {
-                cardFace.className = "card-face back absolute inset-0 bg-gradient-to-br from-red-100 to-slate-900 text-center border-2 border-red-500 flex flex-col items-center justify-center p-6";
-                cardFace.innerHTML = `<div class="text-xs uppercase text-red-500 font-bold tracking-wider">Роль:</div><div class="text-4xl font-black text-red-600">ШПИОН 🕵️‍♂️</div><p class="text-[11px] text-slate-400 mt-2">Вычисляй локацию по ответам игроков, не выдавая себя!</p>`;
-                document.getElementById('game-my-loc').innerText = "Определите по вопросам...";
-                document.getElementById('game-my-loc').className = "font-bold text-red-400";
-            } else {
-                cardFace.className = "card-face back absolute inset-0 bg-gradient-to-br from-emerald-50 to-slate-800 text-center border-2 border-emerald-500 flex flex-col items-center justify-center p-6";
-                cardFace.innerHTML = `<div class="text-xs uppercase text-emerald-400 font-bold tracking-wider">Вы мирный житель. Локация:</div><div class="text-2xl font-black text-white bg-slate-800 px-4 py-2 mt-2 border border-slate-700 rounded-xl shadow">${data.location}</div>`;
-                document.getElementById('game-my-loc').innerText = data.location;
-                document.getElementById('game-my-loc').className = "font-bold text-emerald-400";
+        function selectVoteTargetOnline(id) {
+            if(selectedVoteTarget) {
+                let oldBtn = document.getElementById(`vote-target-${selectedVoteTarget}`);
+                if(oldBtn) oldBtn.className = "w-full py-2.5 px-4 bg-white dark:bg-slate-900 border-2 border-slate-200 dark:border-slate-800 rounded-xl text-xs font-bold text-left flex justify-between items-center active:scale-[0.99] transition";
+                let oldBadge = document.getElementById(`vote-badge-${selectedVoteTarget}`);
+                if(oldBadge) { oldBadge.innerText = "Выбрать"; oldBadge.className = "text-[9px] font-bold text-slate-400 uppercase"; }
             }
-        });
 
-        socket.on('chatUpdate', (data) => {
-            document.getElementById('game-round-title').innerText = `Раунд ${data.round} | Ход ${data.step}`;
-            const chatBox = document.getElementById('chat-messages');
+            selectedVoteTarget = id;
             
-            chatBox.innerHTML = data.history.map(h => `
-                <div class="py-1 border-b border-slate-100 dark:border-slate-800/40">
-                    <span class="font-bold text-slate-400">${h.nickname}:</span> 
-                    <span class="font-black px-2 py-0.5 rounded bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-white">${h.word}</span>
-                </div>
-            `).join('');
-            chatBox.scrollTop = chatBox.scrollHeight;
+            let newBtn = document.getElementById(`vote-target-${id}`);
+            newBtn.className = "w-full py-2.5 px-4 bg-red-500/10 border-2 border-red-500 rounded-xl text-xs font-black text-left flex justify-between items-center text-red-500 transition";
+            let newBadge = document.getElementById(`vote-badge-${id}`);
+            newBadge.innerText = "🎯 Цель";
+            newBadge.className = "text-[9px] font-black text-red-500 uppercase tracking-wider";
 
-            const turnIndicator = document.getElementById('chat-turn-indicator');
-            const isMyTurn = data.activePlayerId === myId;
-            
-            if (isMyTurn) {
-                turnIndicator.innerText = "⭐ СЕЙЧАС ТВОЙ ХОД! Отправь ассоциацию";
-                turnIndicator.className = "text-[11px] font-black text-center py-1 bg-emerald-500/20 text-emerald-500 rounded animate-bounce";
-                document.getElementById('chat-input').disabled = false;
-                document.getElementById('chat-input').placeholder = "Введите ассоциацию (до 10 слов)...";
-            } else {
-                turnIndicator.innerText = `Ходит: ${data.activePlayerName}...`;
-                turnIndicator.className = "text-[11px] font-bold text-center py-1 bg-slate-500/10 text-slate-400 rounded";
-                document.getElementById('chat-input').disabled = true;
-                document.getElementById('chat-input').placeholder = "Ожидайте своей очереди...";
-                document.getElementById('chat-send-btn').disabled = true;
-                document.getElementById('chat-send-btn').className = "px-3 bg-slate-300 text-slate-500 rounded-lg font-bold text-xs cursor-not-allowed";
+            const sBtn = document.getElementById('submit-vote-btn');
+            sBtn.disabled = false;
+            sBtn.className = "w-1/2 py-3 bg-red-500 hover:bg-red-600 text-white font-black rounded-xl text-xs shadow-md active:scale-95 transition";
+        }
+
+        function selectSkipOnline() {
+            if(confirm('Вы уверены, что хотите пропустить голосование в этом раунде?')) {
+                socket.emit('castVote', { code: roomCode, target: 'skip' });
             }
-        });
+        }
 
-        socket.on('votingStarted', (data) => {
-            document.getElementById('game-screen-online').classList.add('hidden');
-            document.getElementById('voting-screen-online').classList.remove('hidden');
+        function confirmVoteOnline() {
+            if(!selectedVoteTarget) return;
+            socket.emit('castVote', { code: roomCode, target: selectedVoteTarget });
+        }
+
+        // НОВАЯ КЛИЕНТСКАЯ ФУНКЦИЯ: ШПИОН НАЗЫВАЕТ СЛОВО
+        function sendSpyGuess() {
+            const input = document.getElementById('spy-guess-input');
+            const guessWord = input.value.trim();
+            if (!guessWord) return alert('Введите название локации!');
             
-            document.getElementById('voting-messages').innerHTML = "";
-            document.getElementById('skip-vote-btn').disabled = false;
-            document.getElementById('skip-vote-btn').className = "w-1/2 py-3 bg-amber-500 text-white rounded-xl text-xs font-bold active:scale-95 transition";
-            document.getElementById('submit-vote-btn').disabled = true;
-            document.getElementById('submit-vote-btn').className = "w-1/2 py-3 bg-slate-300 text-slate-500 rounded-xl text-xs font-bold cursor-not-allowed";
-
-            const vList = document.getElementById('voting-players-list');
-            vList.innerHTML = data.players.map(p => `
-                <button onclick="selectSuspectOnline('${p.id}', this)" class="w-full py-2.5 px-4 text-left font-bold rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/50 vote-p-btn text-xs transition">
-                    👤 Подозрение против: <span class="text-slate-800 dark:text-white font-black ml-1">${p.nickname}</span> ${p.id === myId ? '(Вы)' : ''}
-                </button>
-            `).join('');
-        });
-
-        socket.on('votingChatUpdate', (history) => {
-            const box = document.getElementById('voting-messages');
-            box.innerHTML = history.map(h => `<div><span class="font-bold text-red-400">${h.nickname}:</span> <span class="text-slate-600 dark:text-slate-300 font-medium">${h.msg}</span></div>`).join('');
-            box.scrollTop = box.scrollHeight;
-        });
-
-        // КРАСИВОЕ МОДАЛЬНОЕ ОКНО ПРИ СКИПЕ
-        socket.on('gameContinuedNextRound', (data) => {
-            document.getElementById('round-alert-text').innerHTML = `Мнения разделились или объявлен пропуск.<br>Начинается <span class="text-amber-400 font-black">Раунд ${data.round}</span>. Напишите новые ассоциации!`;
-            
-            const modal = document.getElementById('round-alert-modal');
-            modal.classList.remove('hidden');
-            
-            document.getElementById('skip-vote-btn').disabled = false;
-            document.getElementById('skip-vote-btn').className = "w-1/2 py-3 bg-amber-500 text-white rounded-xl text-xs font-bold active:scale-95 transition";
-            document.getElementById('submit-vote-btn').disabled = true;
-        });
+            if (confirm(`Вы уверены, что хотите назвать локацию "${guessWord}"? Игра мгновенно завершится для всех игроков.`)) {
+                socket.emit('spyGuessLocation', {
+                    code: roomCode,
+                    location: guessWord
+                });
+            }
+        }
 
         function closeRoundModal() {
             document.getElementById('round-alert-modal').classList.add('hidden');
-            document.getElementById('voting-screen-online').classList.add('hidden');
             document.getElementById('game-screen-online').classList.remove('hidden');
         }
 
-        socket.on('gameOver', (data) => {
-            document.getElementById('voting-screen-online').classList.add('hidden');
-            document.getElementById('game-screen-online').classList.add('hidden');
-            document.getElementById('result-screen').classList.remove('hidden');
-            
-            const box = document.getElementById('result-box');
-            if (data.status === 'citizens_win') {
-                box.className = "p-5 rounded-2xl border-2 border-emerald-500 bg-emerald-50 dark:bg-emerald-950/20";
-                box.innerHTML = `<h3 class="text-xl font-black text-emerald-600 mb-1">Мирные победили! 🎉</h3><p class="text-xs text-slate-500">Был пойман шпион: <span class="font-bold text-slate-800 dark:text-white">${data.kickedName}</span></p>`;
-            } else {
-                box.className = "p-5 rounded-2xl border-2 border-red-500 bg-red-50 dark:bg-red-950/20";
-                box.innerHTML = `<h3 class="text-xl font-black text-red-600 mb-1">Шпион победил! 🕵️‍♂️</h3><p class="text-xs text-slate-500">Выгнали мирного жителя: <span class="font-bold text-slate-800 dark:text-white">${data.kickedName}</span>. Шпион остался незамеченным!</p>`;
-            }
-        });
-
-        socket.on('errorMsg', (msg) => {
-            alert(msg);
-        });
         function backToLobby() {
             document.getElementById('result-screen').classList.add('hidden');
             document.getElementById('online-lobby-screen').classList.remove('hidden');
+            if(isHost) {
+                document.getElementById('host-settings-block').classList.remove('hidden');
+                document.getElementById('player-waiting-block').classList.add('hidden');
+            } else {
+                document.getElementById('host-settings-block').classList.add('hidden');
+                document.getElementById('player-waiting-block').classList.remove('hidden');
+            }
         }
     </script>
 </body>
