@@ -9,7 +9,7 @@ const server = http.createServer(app);
 const io = new Server(server, {
     cors: {
         origin: "*", 
-        methods: [["GET", "POST"]]
+        methods: ["GET", "POST"]
     }
 });
 
@@ -19,7 +19,6 @@ app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, 'index.html'));
 });
 
-// ТВОЙ ОБНОВЛЕННЫЙ СПИСОК ПРОСТЫХ СЛОВ ВМЕСТО ЛОКАЦИЙ
 const onlineLocations = [
     "Ложка", "Ручка", "Книга", "Стол", "Стул", "Окно", "Дверь", "Лампа", "Кошка", "Собака",
     "Чайник", "Чашка", "Тарелка", "Нож", "Кровать", "Подушка", "Ковёр", "Телефон", "Ключ", "Часы",
@@ -44,7 +43,7 @@ function activateVoting(roomCode) {
 
     room.status = 'voting';
     room.votes = {};
-    room.votedPlayers = []; // Сброс списка проголосовавших перед началом
+    room.votedPlayers = [];
 
     io.to(roomCode).emit('votingStarted', {
         players: room.players.map(p => ({ id: p.id, nickname: p.nickname }))
@@ -107,7 +106,6 @@ io.on('connection', (socket) => {
             return socket.emit('errorMsg', 'Для игры нужно минимум 3 игрока!');
         }
 
-        // ПОЛНЫЙ СБРОС ДАННЫХ ДЛЯ НОВОЙ ИГРЫ
         room.status = 'ingame';
         room.round = 1;
         room.step = 1;
@@ -144,11 +142,8 @@ io.on('connection', (socket) => {
         if (activePlayer.id !== socket.id) return;
 
         room.history.push({ nickname: activePlayer.nickname, word: text });
-
-        // Переход хода к следующему игроку
         room.activePlayerIdx = (room.activePlayerIdx + 1) % room.players.length;
 
-        // Если круг завершился (каждый назвал по слову)
         if (room.history.length === room.players.length) {
             activateVoting(roomCode);
         } else {
@@ -182,14 +177,13 @@ io.on('connection', (socket) => {
                 }
             }
 
-            // ЕСЛИ НИЧЬЯ ИЛИ СКИП
             if (isTie || kickedId === 'skip') {
                 room.round += 1;
                 room.step = 1;
                 room.status = 'ingame';
                 room.history = []; 
                 room.activePlayerIdx = Math.floor(Math.random() * room.players.length);
-                room.votedPlayers = []; // ИСПРАВЛЕНО: корректный сброс массива
+                room.votedPlayers = []; 
                 room.votes = {};
 
                 io.to(roomCode).emit('gameContinuedNextRound', { round: room.round });
