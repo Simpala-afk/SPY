@@ -6,7 +6,6 @@ const path = require('path');
 const app = express();
 const server = http.createServer(app);
 
-// ТУТ МЫ РАЗРЕШАЕМ ЛЮБЫЕ ПОДКЛЮЧЕНИЯ ИЗ ИНТЕРНЕТА
 const io = new Server(server, {
     cors: {
         origin: "*", 
@@ -14,14 +13,12 @@ const io = new Server(server, {
     }
 });
 
-// Отдаем файлы игры из корня
 app.use(express.static(__dirname));
 
 app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, 'index.html'));
 });
 
-// База локаций для сетевой игры
 const onlineLocations = [
     "Орбитальная станция", "Подводная лодка", "Киностудия", "Банк", 
     "Пиратский корабль", "Театр", "Полярная станция", "Павильон Марвел", 
@@ -31,7 +28,6 @@ const onlineLocations = [
 
 let rooms = {};
 
-// Генерация случайного кода комнаты (5 букв)
 function generateRoomCode() {
     const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
     let code = '';
@@ -41,23 +37,35 @@ function generateRoomCode() {
     return code;
 }
 
+// Вынесли функцию активации голосования в отдельный блок, чтобы вызывать её автоматически
+function activateVoting(roomCode) {
+    const room = rooms[roomCode];
+    if (!room) return;
+
+    room.status = 'voting';
+    room.votingHistory = [];
+    room.votes = {};
+    room.votedPlayers.clear();
+
+    io.to(roomCode).emit('votingStarted', { players: room.players });
+}
+
 io.on('connection', (socket) => {
     console.log(`Пользователь подключился: ${socket.id}`);
 
-    // 1. Создание комнаты
     socket.on('createRoom', (data) => {
         const roomCode = generateRoomCode();
         rooms[roomCode] = {
             id: roomCode,
             players: [{ id: socket.id, nickname: data.nickname, isHost: true }],
-            status: 'lobby', // lobby, ingame, voting
+            status: 'lobby',
             location: "",
             history: [],
             round: 1,
             step: 1,
             activePlayerIdx: 0,
             votingHistory: [],
-            votes: {}, // targetPlayerId -> count или 'skip' -> count
+            votes: {}, 
             votedPlayers: new Set()
         };
         socket.join(roomCode);
@@ -65,7 +73,6 @@ io.on('connection', (socket) => {
         io.to(roomCode).emit('roomPlayersUpdate', { players: rooms[roomCode].players });
     });
 
-    // 2. Вход в комнату
     socket.on('joinRoom', (data) => {
         const code = data.roomCode.toUpperCase();
         if (!rooms[code]) {
@@ -82,7 +89,6 @@ io.on('connection', (socket) => {
         io.to(code).emit('roomPlayersUpdate', { players: rooms[code].players });
     });
 
-    // 3. Старт игры
     socket.on('startGame', (data) => {
         const room = rooms[data.roomCode];
         if (!room || room.players.length < 3) {
@@ -93,7 +99,6 @@ io.on('connection', (socket) => {
         room.status = 'ingame';
         room.location = onlineLocations[Math.floor(Math.random() * onlineLocations.length)];
         
-        // Назначаем одного случайного шпиона
         const spyIdx = Math.floor(Math.random() * room.players.length);
         const roles = room.players.map((p, idx) => ({
             id: p.id,
@@ -107,42 +112,38 @@ io.on('connection', (socket) => {
         room.activePlayerIdx = Math.floor(Math.random() * room.players.length);
 
         io.to(data.roomCode).emit('gameStarted', { roles, location: room.location });
-        
-        // Отправляем первый пустой апдейт чата, чтобы передать ход первому игроку
         sendChatUpdate(data.roomCode);
     });
 
-    // 4. Отправка слова по цепочке
     socket.on('chatWord', (data) => {
         const room = rooms[data.roomCode];
         if (!room || room.status !== 'ingame') return;
 
         const activePlayer = room.players[room.activePlayerIdx];
-        if (socket.id !== activePlayer.id) return; // Ход не этого игрока
+        if (socket.id !== activePlayer.id) return; 
 
         room.history.push({ nickname: activePlayer.nickname, word: data.word });
         
-        // Передаем ход следующему по кругу
+        // Передаем ход следующему
         room.activePlayerIdx = (room.activePlayerIdx + 1) % room.players.length;
         room.step++;
 
-        sendChatUpdate(data.roomCode);
+        // АВТОМАТИЧЕСКИЙ ПЕРЕХОД: если шагов сделано больше, чем игроков в комнате (круг завершен)
+        if (room.step > room.players.length) {
+            sendChatUpdate(data.roomCode); // отправляем последнее слово, чтобы отобразилось
+            setTimeout(() => {
+                activateVoting(data.roomCode); // Спустя 1.5 секунды автоматом включаем голосование
+            }, 1500);
+        } else {
+            sendChatUpdate(data.roomCode);
+        }
     });
 
-    // 5. Переход к голосованию
+    // Оставили ручной запуск на всякий случай, если админ захочет прервать игру раньше
     socket.on('startVoting', (data) => {
-        const room = rooms[data.roomCode];
-        if (!room || room.status !== 'ingame') return;
-
-        room.status = 'voting';
-        room.votingHistory = [];
-        room.votes = {};
-        room.votedPlayers.clear();
-
-        io.to(data.roomCode).emit('votingStarted', { players: room.players });
+        activateVoting(data.roomCode);
     });
 
-    // Чат обсуждения на этапе голосования
     socket.on('votingChatMsg', (data) => {
         const room = rooms[data.roomCode];
         if (!room || room.status !== 'voting') return;
@@ -154,25 +155,21 @@ io.on('connection', (socket) => {
         io.to(data.roomCode).emit('votingChatUpdate', room.votingHistory);
     });
 
-    // 6. Прием голосов
     socket.on('submitVote', (data) => {
         const room = rooms[data.roomCode];
         if (!room || room.status !== 'voting') return;
-        if (room.votedPlayers.has(socket.id)) return; // Уже голосовал
+        if (room.votedPlayers.has(socket.id)) return; 
 
         room.votedPlayers.add(socket.id);
-        const target = data.suspectId; // ID игрока или 'skip'
+        const target = data.suspectId; 
         room.votes[target] = (room.votes[target] || 0) + 1;
 
-        // Если проголосовали все
         if (room.votedPlayers.size === room.players.length) {
             processVotes(data.roomCode);
         }
     });
 
     socket.on('disconnect', () => {
-        console.log(`Пользователь отключился: ${socket.id}`);
-        // Чистим пустые комнаты при выходе игроков
         for (let code in rooms) {
             rooms[code].players = rooms[code].players.filter(p => p.id !== socket.id);
             if (rooms[code].players.length === 0) {
@@ -186,13 +183,14 @@ io.on('connection', (socket) => {
 
 function sendChatUpdate(roomCode) {
     const room = rooms[roomCode];
+    if (!room) return;
     const activePlayer = room.players[room.activePlayerIdx];
     io.to(roomCode).emit('chatUpdate', {
         round: room.round,
         step: room.step,
         history: room.history,
-        activePlayerId: activePlayer.id,
-        activePlayerName: activePlayer.nickname
+        activePlayerId: activePlayer ? activePlayer.id : null,
+        activePlayerName: activePlayer ? activePlayer.nickname : ""
     });
 }
 
@@ -212,9 +210,9 @@ function processVotes(roomCode) {
         }
     }
 
-    // Если ничья по голосам или победил вариант 'skip'
+    // ИСПРАВЛЕНИЕ СКИПА: Проверяем ничью или выбор пропуска ДО того, как искать игрока в базе
     if (isTie || kickedId === 'skip') {
-        io.to(roomCode).emit('gameOver', { status: 'draw' });
+        io.to(roomCode).emit('gameOver', { status: 'draw', reason: 'skip_or_tie' });
         delete rooms[roomCode];
         return;
     }
@@ -222,15 +220,19 @@ function processVotes(roomCode) {
     const kickedPlayer = room.players.find(p => p.id === kickedId);
     const kickedRole = room.roles.find(r => r.id === kickedId);
 
+    if (!kickedPlayer || !kickedRole) {
+        io.to(roomCode).emit('gameOver', { status: 'draw', reason: 'unknown' });
+        delete rooms[roomCode];
+        return;
+    }
+
     if (kickedRole.isSpy) {
-        // Мирные выиграли, так как поймали шпиона
         io.to(roomCode).emit('gameOver', { status: 'citizens_win', reason: 'spy_caught', kickedName: kickedPlayer.nickname });
     } else {
-        // Шпион выиграл, так как выгнали мирного
         io.to(roomCode).emit('gameOver', { status: 'spy_win', reason: 'wrong_vote', kickedName: kickedPlayer.nickname });
     }
 
-    delete rooms[roomCode]; // Удаляем комнату после завершения игры
+    delete rooms[roomCode];
 }
 
 const PORT = process.env.PORT || 10000;
