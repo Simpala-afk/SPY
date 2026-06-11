@@ -409,7 +409,7 @@
         // =========================================================
         // =============== ЛОГИКА 2. ОНЛАЙН РЕЖИМА =================
         // =========================================================
-        let myRoomCode = '';
+       let myRoomCode = '';
         let myId = '';
         let roomDataCache = null;
         let selectedSuspectId = null;
@@ -465,7 +465,7 @@
             document.getElementById('game-screen-online').classList.remove('hidden');
         }
 
-        // ВАЛИДАЦИЯ: Разрешаем писать фразы до 10 слов включительно
+        // ИСПРАВЛЕННАЯ ВАЛИДАЦИЯ ДЛЯ ТЕЛЕФОНА: Разрешаем писать целые фразы до 10 слов
         function validateWordInput(input) {
             const text = input.value.trim();
             const sendBtn = document.getElementById('chat-send-btn');
@@ -485,7 +485,6 @@
             } else {
                 sendBtn.disabled = false;
                 sendBtn.className = "px-3 bg-emerald-500 text-white rounded-lg font-bold text-xs shadow cursor-pointer";
-                input.placeholder = "Введите ассоциацию (до 10 слов)...";
             }
         }
 
@@ -631,7 +630,7 @@
             
             document.getElementById('voting-messages').innerHTML = "";
             document.getElementById('skip-vote-btn').disabled = false;
-            document.getElementById('skip-vote-btn').className = "w-1/2 py-3 bg-amber-500/10 text-amber-500 border border-amber-500/30 rounded-xl text-xs font-bold active:scale-95 transition";
+            document.getElementById('skip-vote-btn').className = "w-1/2 py-3 bg-amber-500 text-white rounded-xl text-xs font-bold active:scale-95 transition";
             document.getElementById('submit-vote-btn').disabled = true;
             document.getElementById('submit-vote-btn').className = "w-1/2 py-3 bg-slate-300 text-slate-500 rounded-xl text-xs font-bold cursor-not-allowed";
 
@@ -649,16 +648,23 @@
             box.scrollTop = box.scrollHeight;
         });
 
+        // КРАСИВОЕ МОДАЛЬНОЕ ОКНО ПРИ СКИПЕ
         socket.on('gameContinuedNextRound', (data) => {
-            document.getElementById('voting-screen-online').classList.add('hidden');
-            document.getElementById('game-screen-online').classList.remove('hidden');
+            document.getElementById('round-alert-text').innerHTML = `Мнения разделились или объявлен пропуск.<br>Начинается <span class="text-amber-400 font-black">Раунд ${data.round}</span>. Напишите новые ассоциации!`;
+            
+            const modal = document.getElementById('round-alert-modal');
+            modal.classList.remove('hidden');
             
             document.getElementById('skip-vote-btn').disabled = false;
-            document.getElementById('skip-vote-btn').className = "w-1/2 py-3 bg-amber-500/10 text-amber-500 border border-amber-500/30 rounded-xl text-xs font-bold active:scale-95 transition";
+            document.getElementById('skip-vote-btn').className = "w-1/2 py-3 bg-amber-500 text-white rounded-xl text-xs font-bold active:scale-95 transition";
             document.getElementById('submit-vote-btn').disabled = true;
-            
-            alert(`Никто не исключен! Начинается Раунд ${data.round}. Напишите новые ассоциации!`);
         });
+
+        function closeRoundModal() {
+            document.getElementById('round-alert-modal').classList.add('hidden');
+            document.getElementById('voting-screen-online').classList.add('hidden');
+            document.getElementById('game-screen-online').classList.remove('hidden');
+        }
 
         socket.on('gameOver', (data) => {
             document.getElementById('voting-screen-online').classList.add('hidden');
