@@ -150,7 +150,23 @@
 
     <div id="voting-screen-online" class="hidden w-full max-w-sm bg-white dark:bg-slate-900 p-6 rounded-2xl shadow-xl border border-slate-200 dark:border-slate-800 space-y-4">
         <h2 class="text-xl font-black text-center">Голосование раунда!</h2>
-        <div id="voting-players-list" class="space-y-2"></div>
+        
+        <div id="voting-content-area" class="space-y-4">
+            <div id="voting-players-list" class="space-y-2"></div>
+            
+            <div id="spy-voting-guess-area" class="hidden border-t pt-3 border-slate-200 dark:border-slate-800 space-y-1.5">
+                <label class="block text-[10px] font-bold uppercase tracking-wider text-red-500 text-center">Выкупили? Есть шанс спастись! Угадайте слово:</label>
+                <div class="flex gap-2">
+                    <input id="spy-voting-guess-input" type="text" placeholder="Ваша последняя попытка..." class="flex-1 px-3 py-2 bg-red-500/5 border border-red-500/20 rounded-xl text-xs focus:outline-none text-slate-900 dark:text-white font-bold">
+                    <button onclick="sendSpyVotingGuess()" class="px-3 bg-gradient-to-r from-red-500 to-orange-500 text-white font-black rounded-xl text-xs active:scale-95 transition">Ответить 💥</button>
+                </div>
+            </div>
+        </div>
+
+        <div id="voting-wait-msg" class="hidden text-center py-8 space-y-2">
+            <div class="text-sm font-bold text-slate-400 animate-pulse">Голос учтён! Ждём остальных...</div>
+        </div>
+    </div>
         
         <div id="spy-voting-guess-area" class="hidden border-t pt-3 border-slate-200 dark:border-slate-800 space-y-1.5">
             <label class="block text-[10px] font-bold uppercase tracking-wider text-red-500 text-center">Выкупили? Есть шанс спастись! Угадайте слово:</label>
@@ -273,9 +289,19 @@
         });
 
         socket.on('gameStarted', (data) => {
+            // АВТО-ЗАТЯГИВАНИЕ: Скрываем абсолютно все лишние экраны, включая экран результатов и лобби
             document.getElementById('online-lobby-screen').classList.add('hidden');
             document.getElementById('result-screen').classList.add('hidden');
+            document.getElementById('voting-screen-online').classList.add('hidden');
+            document.getElementById('game-screen-online').classList.add('hidden');
             
+            // ОЧИСТКА ПОЛЕЙ ВВОДА ДЛЯ НОВОЙ ИГРЫ
+            document.getElementById('chat-input').value = "";
+            const spyInputNormal = document.getElementById('spy-guess-input');
+            if (spyInputNormal) spyInputNormal.value = "";
+            const spyInputVoting = document.getElementById('spy-voting-guess-input');
+            if (spyInputVoting) spyInputVoting.value = "";
+
             myRoleData = data.roles.find(r => r.id === myId);
             
             const cardFace = document.getElementById('secret-card-face');
@@ -344,6 +370,10 @@
         socket.on('votingStarted', (data) => {
             document.getElementById('game-screen-online').classList.add('hidden');
             document.getElementById('round-alert-modal').classList.add('hidden');
+            
+            // Сбрасываем отображение экрана голосования в исходное состояние
+            document.getElementById('voting-wait-msg').classList.add('hidden');
+            document.getElementById('voting-content-area').classList.remove('hidden');
             document.getElementById('voting-screen-online').classList.remove('hidden');
 
             const list = document.getElementById('voting-players-list');
@@ -360,7 +390,10 @@
                 ⏭️ Пропустить голосование (Скип)
             </button>`;
 
-            // ЕСЛИ ИГРОК ШПИОН — ОТОБРАЖАЕМ ЕМУ ПОЛЕ ДЛЯ ОТВЕТА НА ЭКРАНЕ ГОЛОСОВАНИЯ
+            // Показываем поле ответа шпиону, если он шпион, и очищаем его
+            const spyVotingInput = document.getElementById('spy-voting-guess-input');
+            if (spyVotingInput) spyVotingInput.value = "";
+
             if (myRoleData && myRoleData.isSpy) {
                 document.getElementById('spy-voting-guess-area').classList.remove('hidden');
             } else {
@@ -368,11 +401,11 @@
             }
         });
 
-        function voteForPlayer(targetId) {
+       function voteForPlayer(targetId) {
             socket.emit('submitVote', { roomCode: roomCode, targetId: targetId });
-            document.getElementById('voting-screen-online').innerHTML = `<div class="text-center py-8 space-y-2">
-                <div class="text-sm font-bold text-slate-400 animate-pulse">Голос учтён! Ждём остальных...</div>
-            </div>`;
+            // Вместо уничтожения всего HTML, просто переключаем видимость блоков внутри экрана голосования
+            document.getElementById('voting-content-area').classList.add('hidden');
+            document.getElementById('voting-wait-msg').classList.remove('hidden');
         }
 
         // НОВАЯ ФУНКЦИЯ ДЛЯ ОТПРАВКИ ОТВЕТА ШПИОНА ИЗ ОКНА ГОЛОСОВАНИЯ
