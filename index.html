@@ -106,7 +106,6 @@
         </div>
     </div>
 
-
     <div id="setup-screen-online" class="hidden w-full max-w-sm bg-white/90 dark:bg-slate-900/90 backdrop-blur-md p-6 rounded-2xl shadow-xl border border-slate-200 dark:border-slate-800 space-y-5 z-10">
         <button onclick="backToMainMenu()" class="text-xs font-bold text-slate-400 hover:text-slate-600 dark:hover:text-white transition">⬅️ Назад в меню</button>
         <div class="text-center">
@@ -213,7 +212,6 @@
         </div>
     </div>
 
-
     <div id="result-screen" class="hidden w-full max-w-sm bg-white dark:bg-slate-900 p-6 rounded-2xl shadow-xl border border-slate-200 text-center space-y-5 z-10">
         <h2 class="text-sm font-medium text-slate-400 uppercase tracking-widest">Результаты игры</h2>
         <div id="result-box" class="p-5 rounded-2xl border-2"></div>
@@ -250,9 +248,10 @@
             chill: ["Пляжный бар", "Шезлонг", "Бассейн с подогревом", "Яхта олигарха", "Аквапарк"]
         };
         const themeTitles = { base: "Базовая подборка", hollywood: "Голливуд / Фильмы", corporation: "Корпорация / Офис", chill: "На чиле / Курорт" };
-
         let currentAppMode = null; // 'offline' или 'online'
-        const socket = io();
+        
+        // ЖЕСТКОЕ ПОДКЛЮЧЕНИЕ К СЕРВЕРУ НА RENDER
+        const socket = io('https://spy-0k8x.onrender.com');
 
         // Переключение ночной темы
         function toggleTheme() { document.documentElement.classList.toggle('dark'); }
@@ -277,7 +276,6 @@
         // =============== ЛОГИКА 1. ОФФЛАЙН РЕЖИМА ================
         // =========================================================
         let stateOff = { players: [], currentIndex: 0, timerInterval: null, timeLeft: 0, location: "" };
-
         function showLocationsModal() {
             const container = document.getElementById('locations-modal-list');
             container.innerHTML = "";
@@ -324,10 +322,8 @@
                 pool = locationsDb[theme];
             }
             stateOff.location = pool[Math.floor(Math.random() * pool.length)];
-
             // Создаем массив игроков
             stateOff.players = Array(pCount).fill().map((_, i) => ({ id: i + 1, isSpy: false }));
-            
             // Расставляем шпионов случайным образом
             let assignedSpies = 0;
             while(assignedSpies < sCount) {
@@ -424,11 +420,13 @@
             const nickname = document.getElementById('online-nickname').value.trim();
             socket.emit('createRoom', { nickname });
         }
+
         function joinLobby() {
             const nickname = document.getElementById('online-nickname').value.trim();
             const roomCode = document.getElementById('online-code-input').value.trim().toUpperCase();
             socket.emit('joinRoom', { roomCode, nickname });
         }
+
         function copyCode() {
             navigator.clipboard.writeText(myRoomCode).then(() => {
                 const toast = document.getElementById('copy-toast');
@@ -436,11 +434,16 @@
                 setTimeout(() => toast.classList.add('opacity-0'), 1500);
             });
         }
-        function startGameOnline() { socket.emit('startGame', { roomCode: myRoomCode }); }
+
+        function startGameOnline() {
+            socket.emit('startGame', { roomCode: myRoomCode });
+        }
+
         function confirmCardReadOnline() {
             document.getElementById('online-card-screen').classList.add('hidden');
             document.getElementById('game-screen-online').classList.remove('hidden');
         }
+
         function validateWordInput(input) {
             const val = input.value.trim();
             const sendBtn = document.getElementById('chat-send-btn');
@@ -452,6 +455,7 @@
                 sendBtn.className = "px-3 bg-emerald-500 text-white rounded-lg font-bold text-xs shadow cursor-pointer";
             }
         }
+
         function sendWordOnline() {
             const input = document.getElementById('chat-input');
             const word = input.value.trim();
@@ -460,7 +464,11 @@
             input.value = "";
             validateWordInput(input);
         }
-        function goToVotingOnline() { socket.emit('startVoting', { roomCode: myRoomCode }); }
+
+        function goToVotingOnline() {
+            socket.emit('startVoting', { roomCode: myRoomCode });
+        }
+
         function sendVotingMessageOnline() {
             const input = document.getElementById('voting-input');
             const msg = input.value.trim();
@@ -468,151 +476,176 @@
             socket.emit('votingChatMsg', { roomCode: myRoomCode, msg });
             input.value = "";
         }
+
         function selectSuspectOnline(id, btn) {
             document.querySelectorAll('.vote-p-btn').forEach(b => {
                 b.className = "w-full py-2.5 px-4 text-left font-bold rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/50 vote-p-btn text-xs";
             });
             document.getElementById('skip-vote-btn').className = "w-1/2 py-3 bg-amber-500/10 text-amber-500 border border-amber-500/30 rounded-xl text-xs font-bold active:scale-95 transition";
             selectedSuspectId = id;
-            btn.className = "w-full py-2.5 px-4 text-left font-bold rounded-xl border-2 border-red-500 bg-red-50/50 dark:bg-red-950/30 text-red-500 vote-p-btn text-xs shadow-sm";
-            const submit = document.getElementById('submit-vote-btn');
-            submit.disabled = false;
-            submit.className = "w-1/2 py-3 bg-red-600 text-white rounded-xl text-xs font-bold shadow cursor-pointer";
+            btn.className = "w-full py-2.5 px-4 text-left font-bold rounded-xl border-2 border-red-500 bg-red-50/50 dark:bg-red-950/30 text-red-500 dark:text-red-400 vote-p-btn text-xs shadow-sm";
+            validateVotingSubmitBtn();
         }
+
         function selectSkipOnline() {
             document.querySelectorAll('.vote-p-btn').forEach(b => {
                 b.className = "w-full py-2.5 px-4 text-left font-bold rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/50 vote-p-btn text-xs";
             });
             selectedSuspectId = 'skip';
-            document.getElementById('skip-vote-btn').className = "w-1/2 py-3 bg-amber-500 text-white border border-amber-500 rounded-xl text-xs font-bold shadow-md transition";
-            const submit = document.getElementById('submit-vote-btn');
-            submit.disabled = false;
-            submit.className = "w-1/2 py-3 bg-red-600 text-white rounded-xl text-xs font-bold shadow cursor-pointer";
-        }
-        function confirmVoteOnline() {
-            if (!selectedSuspectId) return;
-            socket.emit('votePlayer', { roomCode: myRoomCode, suspectId: selectedSuspectId });
-            document.getElementById('submit-vote-btn').disabled = true;
-            document.getElementById('submit-vote-btn').innerText = "Голос учтен...⏳";
+            document.getElementById('skip-vote-btn').className = "w-1/2 py-3 bg-amber-500 text-white rounded-xl text-xs font-bold shadow-md active:scale-95 transition";
+            validateVotingSubmitBtn();
         }
 
-        // --- ПРИЕМ СОБЫТИЙ ОНЛАЙНА ОТ СЕРВЕРА ---
-        socket.on('connect', () => { myId = socket.id; });
-        socket.on('roomData', (room) => {
-            roomDataCache = room; myRoomCode = room.roomCode; myId = socket.id;
+        function validateVotingSubmitBtn() {
+            const btn = document.getElementById('submit-vote-btn');
+            if (selectedSuspectId) {
+                btn.disabled = false;
+                btn.className = "w-1/2 py-3 bg-red-600 text-white rounded-xl text-xs font-bold shadow-md active:scale-95 transition cursor-pointer";
+            }
+        }
+
+        function confirmVoteOnline() {
+            if (!selectedSuspectId) return;
+            socket.emit('submitVote', { roomCode: myRoomCode, suspectId: selectedSuspectId });
+            document.getElementById('submit-vote-btn').disabled = true;
+            document.getElementById('submit-vote-btn').className = "w-1/2 py-3 bg-slate-300 text-slate-500 rounded-xl text-xs font-bold cursor-not-allowed";
+            document.getElementById('skip-vote-btn').disabled = true;
+        }
+
+        // =========================================================
+        // ============= ОБРАБОТЧИКИ СОБЫТИЙ СЕТИ ==================
+        // =========================================================
+        socket.on('roomCreated', (data) => {
+            myRoomCode = data.roomCode;
+            myId = data.playerId;
             document.getElementById('setup-screen-online').classList.add('hidden');
             document.getElementById('online-lobby-screen').classList.remove('hidden');
             document.getElementById('lobby-code-display').innerText = myRoomCode;
-            document.getElementById('lobby-players-count').innerText = `В комнате: ${room.players.length} участников`;
-
-            const list = document.getElementById('lobby-players-list'); list.innerHTML = "";
-            room.players.forEach(p => {
-                const isMe = p.id === myId; const isHost = p.id === room.players[0].id;
-                let badge = isHost ? "👑" : "👤"; let meTag = isMe ? " (Ты)" : "";
-                list.innerHTML += `<div class="font-bold text-xs py-1 px-2 rounded bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300">${badge} ${p.nickname}${meTag}</div>`;
-            });
-
-            if (room.players[0].id === myId) {
-                document.getElementById('host-settings-block').classList.remove('hidden');
-                document.getElementById('player-waiting-block').classList.add('hidden');
-            } else {
-                document.getElementById('host-settings-block').classList.add('hidden');
-                document.getElementById('player-waiting-block').classList.remove('hidden');
-            }
+            document.getElementById('host-settings-block').classList.remove('hidden');
         });
 
-        socket.on('error', (msg) => { alert(msg); });
+        socket.on('roomJoined', (data) => {
+            myRoomCode = data.roomCode;
+            myId = data.playerId;
+            document.getElementById('setup-screen-online').classList.add('hidden');
+            document.getElementById('online-lobby-screen').classList.remove('hidden');
+            document.getElementById('lobby-code-display').innerText = myRoomCode;
+            document.getElementById('player-waiting-block').classList.remove('hidden');
+        });
 
-        socket.on('gameStarted', ({ location, roles }) => {
+        socket.on('roomPlayersUpdate', (data) => {
+            document.getElementById('lobby-players-count').innerText = `В комнате: ${data.players.length} участников`;
+            const list = document.getElementById('lobby-players-list');
+            list.innerHTML = data.players.map(p => `
+                <div class="flex justify-between items-center py-2 px-3 bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-xl">
+                    <span class="text-xs font-bold ${p.id === myId ? 'text-red-500' : 'text-slate-700 dark:text-slate-300'}">${p.nickname}</span>
+                    <span class="text-[9px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-md ${p.isHost ? 'bg-amber-100 text-amber-700 dark:bg-amber-950/40 dark:text-amber-400' : 'bg-slate-100 text-slate-500 dark:bg-slate-800 dark:text-slate-400'}">${p.isHost ? 'Хост' : 'Игрок'}</span>
+                </div>
+            `).join('');
+        });
+
+        socket.on('errorMsg', (msg) => { alert(msg); });
+
+        socket.on('gameStarted', (data) => {
+            roomDataCache = data;
             document.getElementById('online-lobby-screen').classList.add('hidden');
             document.getElementById('online-card-screen').classList.remove('hidden');
-            const myRoleObj = roles.find(r => r.id === myId);
+            document.getElementById('secret-card').classList.remove('flipped');
+            
+            const me = data.roles.find(r => r.id === myId);
             const cardFace = document.getElementById('secret-card-face');
             
-            if (myRoleObj.isSpy) {
-                cardFace.className = "card-face back absolute inset-0 bg-gradient-to-br from-red-100 to-slate-900 rounded-2xl flex flex-col items-center justify-center p-6 text-center border-2 border-red-500";
-                cardFace.innerHTML = `<div class="text-xs uppercase tracking-widest text-red-500 font-bold mb-1">Ваш статус:</div><div class="text-4xl font-black text-red-600 tracking-wider">ШПИОН🕵️‍♂️</div><div class="text-[11px] text-slate-400 mt-3">Вы не знаете локацию. Вычисляйте местных вопросами!</div>`;
-                document.getElementById('game-my-loc').innerText = "Неизвестно🕵️‍♂️";
+            if (me.isSpy) {
+                cardFace.className = "card-face back absolute inset-0 bg-gradient-to-br from-red-100 to-slate-900 text-center border-2 border-red-500 flex flex-col items-center justify-center p-6";
+                cardFace.innerHTML = `<div class="text-xs uppercase text-red-500 font-bold tracking-wider">Ваша Секретная Роль:</div><div class="text-4xl font-black text-red-600 mt-1">ШПИОН 🕵️‍♂️</div><p class="text-[11px] text-slate-400 mt-2">Вам неизвестно место! Слушайте чужие слова, пишите свои ассоциации аккуратно и разгадайте локацию!</p>`;
+                document.getElementById('game-my-loc').innerText = "??? (Вы шпион)";
+                document.getElementById('game-my-loc').className = "font-bold text-red-400";
             } else {
-                cardFace.className = "card-face back absolute inset-0 bg-gradient-to-br from-emerald-50 to-slate-800 rounded-2xl flex flex-col items-center justify-center p-6 text-center border-2 border-emerald-500";
-                cardFace.innerHTML = `<div class="text-xs uppercase tracking-widest text-emerald-400 font-bold mb-1">Вы местный житель</div><div class="text-[10px] text-slate-400 mb-1">Локация:</div><div class="text-2xl font-black text-white bg-slate-800 px-4 py-2 rounded-xl border border-slate-700 shadow inline-block">${location}</div>`;
-                document.getElementById('game-my-loc').innerText = location;
+                cardFace.className = "card-face back absolute inset-0 bg-gradient-to-br from-emerald-50 to-slate-800 text-center border-2 border-emerald-500 flex flex-col items-center justify-center p-6";
+                cardFace.innerHTML = `<div class="text-xs uppercase text-emerald-400 font-bold tracking-wider">Вы местный житель!</div><div class="text-xs text-slate-400 mt-1">Локация раунда:</div><div class="text-2xl font-black text-white bg-slate-800 px-4 py-2 mt-2 border border-slate-700 rounded-xl shadow">${data.location}</div>`;
+                document.getElementById('game-my-loc').innerText = data.location;
+                document.getElementById('game-my-loc').className = "font-bold text-emerald-400";
             }
         });
 
-        socket.on('roundUpdate', ({ round, turnIndex, players }) => {
-            document.getElementById('game-round-title').innerText = `Раунд ${round}`;
-            const activePlayer = players[turnIndex];
-            const indicator = document.getElementById('chat-turn-indicator');
-            const input = document.getElementById('chat-input');
-            const sendBtn = document.getElementById('chat-send-btn');
+        socket.on('chatUpdate', (data) => {
+            document.getElementById('game-round-title').innerText = `Раунд ${data.round} | Шаг ${data.step}`;
+            const chatBox = document.getElementById('chat-messages');
+            chatBox.innerHTML = data.history.map(h => `
+                <div class="py-1 border-b border-slate-100 dark:border-slate-800/40">
+                    <span class="font-bold text-slate-400">${h.nickname}:</span> 
+                    <span class="font-black px-2 py-0.5 rounded bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-white">${h.word}</span>
+                </div>
+            `).join('');
+            chatBox.scrollTop = chatBox.scrollHeight;
 
-            if (activePlayer.id === myId) {
-                indicator.innerText = "⭐ ТВОЙ ХОД! Отправь ровно 1 слово.";
-                indicator.className = "text-[11px] font-bold text-center py-1 bg-emerald-500/10 text-emerald-400 rounded animate-pulse";
-                input.disabled = false; input.placeholder = "Введите слово...";
+            const turnIndicator = document.getElementById('chat-turn-indicator');
+            const isMyTurn = data.activePlayerId === myId;
+            
+            if (isMyTurn) {
+                turnIndicator.innerText = "⭐ СЕЙЧАС ТВОЙ ХОД! Отправь слово";
+                turnIndicator.className = "text-[11px] font-black text-center py-1 bg-emerald-500/20 text-emerald-500 rounded animate-bounce";
+                document.getElementById('chat-input').disabled = false;
+                document.getElementById('chat-input').placeholder = "Введите ОДНО слово...";
             } else {
-                indicator.innerText = `⏳ Пишет: ${activePlayer.nickname}`;
-                indicator.className = "text-[11px] font-bold text-center py-1 bg-slate-500/10 text-slate-400 rounded";
-                input.disabled = true; input.placeholder = "Ждите своей очереди...";
-                sendBtn.disabled = true; sendBtn.className = "px-3 bg-slate-300 text-slate-500 rounded-lg font-bold text-xs";
+                turnIndicator.innerText = `Ходит: ${data.activePlayerName}...`;
+                turnIndicator.className = "text-[11px] font-bold text-center py-1 bg-slate-500/10 text-slate-400 rounded";
+                document.getElementById('chat-input').disabled = true;
+                document.getElementById('chat-input').placeholder = "Ожидайте своей очереди...";
+                document.getElementById('chat-send-btn').disabled = true;
+                document.getElementById('chat-send-btn').className = "px-3 bg-slate-300 text-slate-500 rounded-lg font-bold text-xs cursor-not-allowed";
             }
         });
 
-        socket.on('newWord', ({ nickname, word }) => {
-            const container = document.getElementById('chat-messages');
-            const isMe = roomDataCache && roomDataCache.players.find(p => p.nickname === nickname)?.id === myId;
-            const color = isMe ? "text-emerald-400 font-extrabold" : "text-red-400 font-bold";
-            container.innerHTML += `<div class="py-0.5 border-b border-slate-100 dark:border-slate-900/40"><span class="${color}">${nickname}:</span> <span class="font-medium">${word}</span></div>`;
-            container.scrollTop = container.scrollHeight;
-        });
-
-        socket.on('votingStarted', () => {
+        socket.on('votingStarted', (data) => {
+            selectedSuspectId = null;
             document.getElementById('game-screen-online').classList.add('hidden');
             document.getElementById('voting-screen-online').classList.remove('hidden');
-            const list = document.getElementById('voting-players-list'); list.innerHTML = "";
-            selectedSuspectId = null;
-
-            const submit = document.getElementById('submit-vote-btn');
-            submit.disabled = true; submit.innerText = "Выгнать 🛑";
-            submit.className = "w-1/2 py-3 bg-slate-300 text-slate-500 rounded-xl text-xs font-bold cursor-not-allowed";
+            document.getElementById('skip-vote-btn').disabled = false;
             document.getElementById('skip-vote-btn').className = "w-1/2 py-3 bg-amber-500/10 text-amber-500 border border-amber-500/30 rounded-xl text-xs font-bold active:scale-95 transition";
+            document.getElementById('submit-vote-btn').disabled = true;
+            document.getElementById('submit-vote-btn').className = "w-1/2 py-3 bg-slate-300 text-slate-500 rounded-xl text-xs font-bold cursor-not-allowed";
 
-            if (roomDataCache) {
-                roomDataCache.players.forEach(p => {
-                    if (p.id === myId) return;
-                    const btn = document.createElement('button'); btn.type = "button"; btn.innerText = p.nickname;
-                    btn.className = "w-full py-2.5 px-4 text-left font-bold rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/50 vote-p-btn text-xs text-slate-800 dark:text-slate-200 transition";
-                    btn.onclick = () => selectSuspectOnline(p.id, btn);
-                    list.appendChild(btn);
-                });
-            }
+            const list = document.getElementById('voting-players-list');
+            list.innerHTML = data.players.map(p => {
+                if (p.id === myId) return '';
+                return `<button onclick="selectSuspectOnline('${p.id}', this)" class="w-full py-2.5 px-4 text-left font-bold rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/50 vote-p-btn text-xs active:scale-[0.99] transition text-slate-700 dark:text-slate-300">🎯 Подозревать: ${p.nickname}</button>`;
+            }).join('');
         });
 
-        socket.on('votingChatBroadcast', ({ nickname, msg }) => {
-            const container = document.getElementById('voting-messages');
-            const isMe = roomDataCache && roomDataCache.players.find(p => p.nickname === nickname)?.id === myId;
-            const color = isMe ? "text-emerald-400 font-bold" : "text-orange-400";
-            container.innerHTML += `<div class="py-0.5"><span class="${color}">${nickname}:</span> <span class="text-slate-700 dark:text-slate-300">${msg}</span></div>`;
-            container.scrollTop = container.scrollHeight;
+        socket.on('votingChatUpdate', (history) => {
+            const vBox = document.getElementById('voting-messages');
+            vBox.innerHTML = history.map(h => `
+                <div class="py-0.5"><span class="font-bold text-slate-400">${h.nickname}:</span> <span class="text-slate-700 dark:text-slate-200">${h.msg}</span></div>
+            `).join('');
+            vBox.scrollTop = vBox.scrollHeight;
         });
 
-        socket.on('votingResult', (data) => {
+        socket.on('gameOver', (data) => {
             document.getElementById('voting-screen-online').classList.add('hidden');
+            document.getElementById('game-screen-online').classList.add('hidden');
             document.getElementById('result-screen').classList.remove('hidden');
+            
             const box = document.getElementById('result-box');
-
-            if (data.status === 'kick') {
-                if (data.wasSpy) {
+            if (data.status === 'spy_win') {
+                if (data.reason === 'wrong_vote') {
+                    box.className = "p-5 rounded-2xl border-2 border-red-500 bg-red-50 dark:bg-red-950/20";
+                    box.innerHTML = `<h3 class="text-xl font-black text-red-600 mb-1">Шпион победил! 🕵️‍♂️</h3><p class="text-xs text-slate-500">Выгнали мирного жителя: <span class="font-bold text-slate-800 dark:text-white">${data.kickedName}</span>. Шпион остался незамеченным!</p>`;
+                } else {
+                    box.className = "p-5 rounded-2xl border-2 border-red-500 bg-red-50 dark:bg-red-950/20";
+                    box.innerHTML = `<h3 class="text-xl font-black text-red-600 mb-1">Шпион победил! 🕵️‍♂️</h3><p class="text-xs text-slate-500">Мирные жители не смогли договориться единым решением.</p>`;
+                }
+            } else if (data.status === 'citizens_win') {
+                if (data.reason === 'spy_caught') {
                     box.className = "p-5 rounded-2xl border-2 border-emerald-500 bg-emerald-50 dark:bg-emerald-950/20";
                     box.innerHTML = `<h3 class="text-xl font-black text-emerald-600 mb-1">Мирные победили! 🎉</h3><p class="text-xs text-slate-500">Был пойман шпион: <span class="font-bold text-slate-800 dark:text-white">${data.kickedName}</span></p>`;
                 } else {
-                    box.className = "p-5 rounded-2xl border-2 border-red-500 bg-red-50 dark:bg-red-950/20";
-                    box.innerHTML = `<h3 class="text-xl font-black text-red-600 mb-1">Шпион победил! 🕵️‍♂️</h3><p class="text-xs text-slate-500">Выгнали мирного жителя: <span class="font-bold text-slate-800 dark:text-white">${data.kickedName}</span>. Шпион остался незамеченным!</p>`;
+                    box.className = "p-5 rounded-2xl border-2 border-emerald-500 bg-emerald-50 dark:bg-emerald-950/20";
+                    box.innerHTML = `<h3 class="text-xl font-black text-emerald-600 mb-1">Мирные победили! 🎉</h3><p class="text-xs text-slate-500">Выгнали мирного жителя: <span class="font-bold text-slate-800 dark:text-white">${data.kickedName}</span>. Шпион остался незамеченным!</p>`;
                 }
             } else if (data.status === 'draw') {
                 box.className = "p-5 rounded-2xl border-2 border-amber-500 bg-amber-50 dark:bg-amber-950/20";
-                box.innerHTML = `<h3 class="text-xl font-black text-amber-500 mb-1">Никто не изгнан 🤝</h3><p class="text-xs text-slate-500 mb-3">Голоса разделились или игроки пропустили голосование. Раунд продолжается!</p><button onclick="document.getElementById('result-screen').classList.add('hidden'); document.getElementById('game-screen-online').classList.remove('hidden');" class="w-full py-2 bg-amber-500 text-white rounded-xl font-bold text-xs">Продолжить обсуждение 🔄</button>`;
+                box.innerHTML = `<h3 class="text-xl font-black text-amber-500 mb-1">Никто не изгнан 🤝</h3><p class="text-xs text-slate-500">Большинство проголосовало за пропуск хода. Никто не покинул игру!</p>`;
             }
         });
     </script>
