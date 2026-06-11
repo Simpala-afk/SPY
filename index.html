@@ -151,6 +151,14 @@
     <div id="voting-screen-online" class="hidden w-full max-w-sm bg-white dark:bg-slate-900 p-6 rounded-2xl shadow-xl border border-slate-200 dark:border-slate-800 space-y-4">
         <h2 class="text-xl font-black text-center">Голосование раунда!</h2>
         <div id="voting-players-list" class="space-y-2"></div>
+        
+        <div id="spy-voting-guess-area" class="hidden border-t pt-3 border-slate-200 dark:border-slate-800 space-y-1.5">
+            <label class="block text-[10px] font-bold uppercase tracking-wider text-red-500 text-center">Выкупили? Есть шанс спастись! Угадайте слово:</label>
+            <div class="flex gap-2">
+                <input id="spy-voting-guess-input" type="text" placeholder="Ваша последняя попытка..." class="flex-1 px-3 py-2 bg-red-500/5 border border-red-500/20 rounded-xl text-xs focus:outline-none text-slate-900 dark:text-white font-bold">
+                <button onclick="sendSpyVotingGuess()" class="px-3 bg-gradient-to-r from-red-500 to-orange-500 text-white font-black rounded-xl text-xs active:scale-95 transition">Ответить 💥</button>
+            </div>
+        </div>
     </div>
 
     <div id="result-screen" class="hidden w-full max-w-sm bg-white dark:bg-slate-900 p-6 rounded-2xl shadow-xl border border-slate-200 dark:border-slate-800 text-center space-y-4">
@@ -332,6 +340,7 @@
             inp.value = "";
         }
 
+        // ОБНОВЛЕННАЯ ФУНКЦИЯ ГОЛОСОВАНИЯ (ТЕПЕРЬ С ПРОВЕРКОЙ НА ШПИОНА)
         socket.on('votingStarted', (data) => {
             document.getElementById('game-screen-online').classList.add('hidden');
             document.getElementById('round-alert-modal').classList.add('hidden');
@@ -347,10 +356,16 @@
                 </button>`;
             });
 
-            // ЗОЛОТАЯ КНОПКА СКИПА С ПОДСВЕТКОЙ ПРИ НАВЕДЕНИИ (ХОВЕРОМ)
             list.innerHTML += `<button onclick="voteForPlayer('skip')" class="w-full py-3 text-center text-xs font-black bg-gradient-to-r from-amber-500 to-yellow-500 hover:from-amber-600 hover:to-yellow-600 text-slate-950 rounded-xl shadow-md shadow-amber-500/20 hover:shadow-amber-500/40 active:scale-95 transition duration-200 uppercase tracking-wider">
                 ⏭️ Пропустить голосование (Скип)
             </button>`;
+
+            // ЕСЛИ ИГРОК ШПИОН — ОТОБРАЖАЕМ ЕМУ ПОЛЕ ДЛЯ ОТВЕТА НА ЭКРАНЕ ГОЛОСОВАНИЯ
+            if (myRoleData && myRoleData.isSpy) {
+                document.getElementById('spy-voting-guess-area').classList.remove('hidden');
+            } else {
+                document.getElementById('spy-voting-guess-area').classList.add('hidden');
+            }
         });
 
         function voteForPlayer(targetId) {
@@ -358,6 +373,14 @@
             document.getElementById('voting-screen-online').innerHTML = `<div class="text-center py-8 space-y-2">
                 <div class="text-sm font-bold text-slate-400 animate-pulse">Голос учтён! Ждём остальных...</div>
             </div>`;
+        }
+
+        // НОВАЯ ФУНКЦИЯ ДЛЯ ОТПРАВКИ ОТВЕТА ШПИОНА ИЗ ОКНА ГОЛОСОВАНИЯ
+        function sendSpyVotingGuess() {
+            const input = document.getElementById('spy-voting-guess-input');
+            const guessWord = input.value.trim();
+            if (!guessWord) return alert('Введите слово!');
+            socket.emit('spyGuessLocation', { code: roomCode, location: guessWord });
         }
 
         socket.on('gameContinuedNextRound', (data) => {
