@@ -165,6 +165,42 @@ io.on('connection', (socket) => {
             processVotes(data.roomCode);
         }
     });
+    // 7.5. Попытка шпиона угадать локацию
+    socket.on('spyGuessLocation', (data) => {
+        const roomCode = data.code;
+        const room = rooms[roomCode];
+        if (!room || room.status !== 'voting') return;
+
+        // Проверяем, что этот игрок действительно шпион
+        const playerRole = room.roles.find(r => r.id === socket.id);
+        if (!playerRole || !playerRole.isSpy) {
+            socket.emit('error', 'Только шпион может угадывать локацию!');
+            return;
+        }
+
+        const guess = data.location.trim().toLowerCase();
+        const actualLocation = room.targetLocation.toLowerCase(); // Убедись, что при старте локация пишется в room.targetLocation
+
+        // Если в твоем текущем коде локация хранится иначе, сервер найдёт её у мирного игрока:
+        const realLocation = room.roles.find(r => !r.isSpy).location.toLowerCase();
+
+        if (guess === realLocation) {
+            io.to(roomCode).emit('gameOver', {
+                status: 'spy_win_guess',
+                kickedName: playerRole.name,
+                actualLocation: room.roles.find(r => !r.isSpy).location,
+                guessWord: data.location
+            });
+        } else {
+            io.to(roomCode).emit('gameOver', {
+                status: 'citizens_win_spy_mistake',
+                kickedName: playerRole.name,
+                actualLocation: room.roles.find(r => !r.isSpy).location,
+                guessWord: data.location
+            });
+        }
+        delete rooms[roomCode]; // Удаляем комнату после завершения игры
+    });
 
     socket.on('disconnect', () => {
         for (let code in rooms) {
