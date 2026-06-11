@@ -177,6 +177,7 @@ io.on('connection', (socket) => {
                 }
             }
 
+            // ИСПРАВЛЕНО: Правильная очистка обычного массива через присвоение []
             if (isTie || kickedId === 'skip') {
                 room.round += 1;
                 room.step = 1;
@@ -257,4 +258,4 @@ io.on('connection', (socket) => {
 });
 
 const PORT = process.env.PORT || 3000;
-server.listen(PORT, () => console.log(`Сервер запущен на порту ${PORT}`));
+server.listen(PORT, () => console.log(`Сервер успешно запущен на порту ${PORT}`));
