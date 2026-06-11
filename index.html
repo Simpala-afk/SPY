@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Игра Шпион (Spyfall) - Все Режимы</title>
+    <title>Игра Шпион (Spyfall) - Режим слов</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="/socket.io/socket.io.js"></script>
     <script>
@@ -68,7 +68,7 @@
         <div class="space-y-4">
             <div>
                 <label class="block text-sm font-medium text-slate-600 dark:text-slate-400 mb-1">Твой никнейм:</label>
-                <input id="online-nickname" type="text" placeholder="Введите имя..." maxlength="15" oninput="validateMenuOnline()" class="w-full bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-xl p-3 text-slate-900 dark:text-white font-bold focus:outline-none focus:border-red-500">
+                <input id="online-nickname" type="text" placeholder="Введите имя..." maxlength="15" class="w-full bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-xl p-3 text-slate-900 dark:text-white font-bold focus:outline-none focus:border-red-500">
             </div>
             <div class="p-3 bg-slate-100 dark:bg-slate-800/40 rounded-xl border border-slate-200 dark:border-slate-800/60">
                 <button id="btn-create-lobby" onclick="createLobby()" class="w-full py-3.5 bg-gradient-to-r from-red-500 to-orange-500 text-white font-bold rounded-xl transition-all active:scale-95 shadow-md">
@@ -78,7 +78,7 @@
             <div class="p-3 bg-slate-100 dark:bg-slate-800/40 rounded-xl border border-slate-200 dark:border-slate-800/60 space-y-2">
                 <label class="block text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Или войти к другу:</label>
                 <div class="flex space-x-2">
-                    <input id="online-code-input" type="text" placeholder="КОД" maxlength="5" oninput="this.value = this.value.toUpperCase(); validateMenuOnline();" class="w-1/2 bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-xl p-3 text-center text-slate-900 dark:text-white font-black tracking-widest focus:outline-none focus:border-red-500">
+                    <input id="online-code-input" type="text" placeholder="КОД" maxlength="5" oninput="this.value = this.value.toUpperCase();" class="w-1/2 bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-xl p-3 text-center text-slate-900 dark:text-white font-black tracking-widest focus:outline-none focus:border-red-500">
                     <button id="btn-join-lobby" onclick="joinLobby()" class="w-1/2 py-3 bg-gradient-to-r from-blue-500 to-indigo-600 text-white font-bold rounded-xl transition-all text-sm active:scale-95 shadow-md">
                         🚪 Войти по коду
                     </button>
@@ -127,7 +127,7 @@
         <div class="flex justify-between items-center bg-slate-100 dark:bg-slate-950 p-3 rounded-xl border border-slate-200 dark:border-slate-800">
             <div>
                 <h2 id="game-round-title" class="text-sm font-black text-slate-800 dark:text-slate-200">Раунд 1</h2>
-                <div class="text-[10px] text-slate-500">Локация: <span id="game-my-loc" class="font-bold text-red-500">Загрузка...</span></div>
+                <div class="text-[10px] text-slate-500">Секретное слово: <span id="game-my-loc" class="font-bold text-red-500">Загрузка...</span></div>
             </div>
             <button onclick="showSecretCardAgain()" class="px-3 py-1.5 bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300 rounded-lg text-xs font-bold active:scale-95">Роль</button>
         </div>
@@ -140,9 +140,9 @@
             </div>
         </div>
         <div id="spy-guess-area" class="hidden border-t pt-3 border-slate-200 dark:border-slate-800 space-y-1.5">
-            <label class="block text-[10px] font-bold uppercase tracking-wider text-red-500">Вы — Шпион! Угадайте локацию:</label>
+            <label class="block text-[10px] font-bold uppercase tracking-wider text-red-500">Вы — Шпион! Угадайте секретное слово:</label>
             <div class="flex gap-2">
-                <input id="spy-guess-input" type="text" placeholder="Название локации..." class="flex-1 px-3 py-2 bg-red-500/5 border border-red-500/20 rounded-xl text-xs focus:outline-none">
+                <input id="spy-guess-input" type="text" placeholder="Напишите слово..." class="flex-1 px-3 py-2 bg-red-500/5 border border-red-500/20 rounded-xl text-xs focus:outline-none">
                 <button onclick="sendSpyGuess()" class="px-3 bg-red-500 text-white font-bold rounded-xl text-xs active:scale-95">Ответить</button>
             </div>
         </div>
@@ -167,7 +167,6 @@
     </div>
 
     <script>
-        // АВТОМАТИЧЕСКИЙ АДРЕС ПОДКЛЮЧЕНИЯ ПОД RENDER И ЛОКАЛКУ
         const socket = io();
 
         let currentMode = null;
@@ -194,10 +193,6 @@
             document.getElementById('setup-screen-offline').classList.add('hidden');
             document.getElementById('setup-screen-online').classList.add('hidden');
             document.getElementById('mode-selection-screen').classList.remove('hidden');
-        }
-
-        function validateMenuOnline() {
-            // Кнопки всегда доступны для предотвращения случайной блокировки интерфейса
         }
 
         function createLobby() {
@@ -277,11 +272,11 @@
             
             const cardFace = document.getElementById('secret-card-face');
             if (myRoleData.isSpy) {
-                cardFace.innerHTML = `<h3 class="text-2xl font-black text-red-500">Ты ШПИОН! 🕵️‍♂️</h3><p class="text-xs text-slate-400 mt-2">Твоя задача — слушать чужие слова и понять, где все находятся!</p>`;
+                cardFace.innerHTML = `<h3 class="text-2xl font-black text-red-500">Ты ШПИОН! 🕵️‍♂️</h3><p class="text-xs text-slate-400 mt-2">Твоя задача — слушать чужие слова и понять, какое слово загадано!</p>`;
                 document.getElementById('game-my-loc').innerText = "Шпион (Неизвестно)";
                 document.getElementById('spy-guess-area').classList.remove('hidden');
             } else {
-                cardFace.innerHTML = `<h3 class="text-2xl font-black text-emerald-500">Мирный Житель 🏢</h3><p class="text-sm font-bold mt-2">Локация: ${data.location}</p>`;
+                cardFace.innerHTML = `<h3 class="text-2xl font-black text-emerald-500">Мирный Житель 🏢</h3><p class="text-sm font-bold mt-2">Секретное слово: ${data.location}</p>`;
                 document.getElementById('game-my-loc').innerText = data.location;
                 document.getElementById('spy-guess-area').classList.add('hidden');
             }
@@ -352,7 +347,8 @@
                 </button>`;
             });
 
-            list.innerHTML += `<button onclick="voteForPlayer('skip')" class="w-full py-2 text-center text-xs font-medium bg-slate-200 dark:bg-slate-800 text-slate-500 dark:text-slate-400 rounded-xl hover:bg-slate-300 transition">
+            // ЗОЛОТАЯ КНОПКА СКИПА С ПОДСВЕТКОЙ ПРИ НАВЕДЕНИИ (ХОВЕРОМ)
+            list.innerHTML += `<button onclick="voteForPlayer('skip')" class="w-full py-3 text-center text-xs font-black bg-gradient-to-r from-amber-500 to-yellow-500 hover:from-amber-600 hover:to-yellow-600 text-slate-950 rounded-xl shadow-md shadow-amber-500/20 hover:shadow-amber-500/40 active:scale-95 transition duration-200 uppercase tracking-wider">
                 ⏭️ Пропустить голосование (Скип)
             </button>`;
         });
@@ -384,17 +380,17 @@
             const box = document.getElementById('result-box');
             if (data.status === 'citizens_win' || data.status === 'citizens_win_guess') {
                 box.className = "p-5 rounded-2xl border-2 border-emerald-500 bg-emerald-50 dark:bg-emerald-950/20";
-                box.innerHTML = `<h3 class="text-xl font-black text-emerald-600 mb-1">Мирные победили! 🎉</h3><p class="text-xs text-slate-500">${data.kickedName}. Локация: <b>${data.word}</b></p>`;
+                box.innerHTML = `<h3 class="text-xl font-black text-emerald-600 mb-1">Мирные победили! 🎉</h3><p class="text-xs text-slate-500">${data.kickedName}. Загаданное слово: <b>${data.word}</b></p>`;
             } else {
                 box.className = "p-5 rounded-2xl border-2 border-red-500 bg-red-50 dark:bg-red-950/20";
-                box.innerHTML = `<h3 class="text-xl font-black text-red-600 mb-1">Шпион победил! 🕵️‍♂️</h3><p class="text-xs text-slate-500">${data.kickedName}. Локация: <b>${data.word}</b></p>`;
+                box.innerHTML = `<h3 class="text-xl font-black text-red-600 mb-1">Шпион победил! 🕵️‍♂️</h3><p class="text-xs text-slate-500">${data.kickedName}. Загаданное слово: <b>${data.word}</b></p>`;
             }
         });
 
         function sendSpyGuess() {
             const input = document.getElementById('spy-guess-input');
             const guessWord = input.value.trim();
-            if (!guessWord) return alert('Введите название локации!');
+            if (!guessWord) return alert('Введите загаданное слово!');
             socket.emit('spyGuessLocation', { code: roomCode, location: guessWord });
         }
 
