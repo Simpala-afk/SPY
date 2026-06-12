@@ -37,9 +37,16 @@ function generateRoomCode() {
     return code;
 }
 
+// Модифицированная функция активации голосования (с остановкой таймера)
 function activateVoting(roomCode) {
     const room = rooms[roomCode];
     if (!room) return;
+
+    // ОСТАНОВКА ТАЙМЕРА: Голосование началось, время больше не тикает
+    if (room.timerInterval) {
+        clearInterval(room.timerInterval);
+        room.timerInterval = null;
+    }
 
     room.status = 'voting';
     room.votes = {};
@@ -48,6 +55,28 @@ function activateVoting(roomCode) {
     io.to(roomCode).emit('votingStarted', {
         players: room.players.map(p => ({ id: p.id, nickname: p.nickname }))
     });
+}
+
+// Функция для запуска/перезапуска онлайн-таймера на 5 минут (300 секунд)
+function startOnlineTimer(roomCode) {
+    const room = rooms[roomCode];
+    if (!room) return;
+
+    if (room.timerInterval) clearInterval(room.timerInterval);
+    room.timeLeft = 300; // 5 минут на раунд
+
+    room.timerInterval = setInterval(() => {
+        if (!rooms[roomCode]) return; // Защита, если комнату удалили
+        
+        rooms[roomCode].timeLeft--;
+        io.to(roomCode).emit('onlineTimerUpdate', { timeLeft: rooms[roomCode].timeLeft });
+
+        if (rooms[roomCode].timeLeft <= 0) {
+            clearInterval(rooms[roomCode].timerInterval);
+            rooms[roomCode].timerInterval = null;
+            activateVoting(roomCode);
+        }
+    }, 1000);
 }
 
 function sendChatUpdate(roomCode) {
@@ -72,6 +101,8 @@ function handlePlayerLeave(socketId) {
             room.players.splice(idx, 1);
             
             if (room.players.length === 0) {
+                // ОСТАНОВКА ТАЙМЕРА: Если в комнате никого не осталось, очищаем таймер перед удалением
+                if (room.timerInterval) clearInterval(room.timerInterval);
                 delete rooms[roomCode];
             } else {
                 if (wasHost) {
@@ -115,7 +146,9 @@ io.on('connection', (socket) => {
             step: 1,
             activePlayerIdx: 0,
             votes: {},
-            votedPlayers: []
+            votedPlayers: [],
+            timeLeft: 300,        // Переменная для хранения времени
+            timerInterval: null   // Ссылка на сам таймер setInterval
         };
         socket.join(roomCode);
         socket.emit('roomCreated', { roomCode: roomCode, playerId: socket.id });
@@ -176,6 +209,9 @@ io.on('connection', (socket) => {
             location: room.location
         });
 
+        // ЗАПУСК ОНЛАЙН-ТАЙМЕРА при старте игры
+        startOnlineTimer(roomCode);
+
         sendChatUpdate(roomCode);
     });
 
@@ -233,6 +269,10 @@ io.on('connection', (socket) => {
                 room.votes = {};
 
                 io.to(roomCode).emit('gameContinuedNextRound', { round: room.round });
+                
+                // ПЕРЕЗАПУСК ТАЙМЕРА: Начинается новый раунд (при ничьей), запускаем таймер заново
+                startOnlineTimer(roomCode);
+
                 sendChatUpdate(roomCode);
                 return;
             }
@@ -248,6 +288,10 @@ io.on('connection', (socket) => {
                 room.votedPlayers = [];
                 room.votes = {};
                 io.to(roomCode).emit('gameContinuedNextRound', { round: room.round });
+                
+                // Перезапуск таймера на всякий случай
+                startOnlineTimer(roomCode);
+
                 sendChatUpdate(roomCode);
                 return;
             }
@@ -257,6 +301,10 @@ io.on('connection', (socket) => {
             } else {
                 io.to(roomCode).emit('gameOver', { status: 'spy_win', kickedName: kickedPlayer.nickname, word: room.location });
             }
+            
+            // ИГРА ОКОНЧЕНА: Сбрасываем таймер, возвращаемся в лобби
+            if (room.timerInterval) clearInterval(room.timerInterval);
+            room.timerInterval = null;
             room.status = 'lobby';
         }
     });
@@ -276,6 +324,10 @@ io.on('connection', (socket) => {
         } else {
             io.to(code).emit('gameOver', { status: 'citizens_win_guess', kickedName: senderRole.nickname, word: room.location });
         }
+
+        // ШПИОН УГАДАЛ/НЕ УГАДАЛ: Игра завершена, убираем таймер
+        if (room.timerInterval) clearInterval(room.timerInterval);
+        room.timerInterval = null;
         room.status = 'lobby';
     });
 
@@ -287,3 +339,4 @@ io.on('connection', (socket) => {
 
 const PORT = process.env.PORT || 3000;
 server.listen(PORT, () => console.log(`Сервер успешно запущен на порту ${PORT}`));
+Сохраняй, закидывай бэкенд на GitHub/Render, и первая часть задачи полностью готова! Дальше останется только обновить интерфейс в index.html.
