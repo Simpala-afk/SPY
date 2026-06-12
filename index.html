@@ -234,6 +234,10 @@
                     <span id="game-my-loc" class="text-xs font-black text-emerald-500 cursor-pointer underline" onclick="showSecretCardAgain()">Посмотреть</span>
                 </div>
             </div>
+            <div class="py-2 px-4 bg-red-500/10 border border-red-500/20 rounded-xl flex justify-between items-center text-xs">
+                <span class="font-bold text-red-500 uppercase tracking-wider">⏱️ До голосования:</span>
+                <span id="online-timer-display" class="font-mono font-black text-base text-red-500">05:00</span>
+            </div>
             <div class="space-y-1.5">
                 <label class="block text-[10px] font-bold uppercase tracking-wider text-slate-400">История слов текущего круга:</label>
                 <div id="chat-messages" class="h-44 overflow-y-auto border dark:border-slate-800 bg-slate-50 dark:bg-slate-950 rounded-xl p-2.5 space-y-2 text-xs"></div>
@@ -246,7 +250,7 @@
                 </div>
             </div>
             <div id="spy-guess-area" class="hidden border-t pt-3 border-slate-100 dark:border-slate-800 space-y-2">
-                <label class="block text-[10px] font-bold uppercase tracking-wider text-red-500 text-center">Выкупили слово? Перехватите победу досрочно:</label>
+                <label class="block text-[10px] font-bold uppercase tracking-wider text-red-500 text-center">Перехватите победу досрочно:</label>
                 <div class="flex gap-2">
                     <input id="spy-guess-input" type="text" placeholder="Ваша догадка..." class="flex-1 px-3 py-2 bg-red-500/5 border border-red-500/20 rounded-xl text-xs font-bold focus:outline-none">
                     <button onclick="triggerSpyConfirmModal('normal')" class="px-4 bg-red-500 text-white font-black rounded-xl text-xs transition">Ответить</button>
@@ -257,6 +261,11 @@
         <div id="voting-screen-online" class="hidden w-full max-w-sm bg-white dark:bg-slate-900 p-6 rounded-2xl shadow-xl border border-slate-200 dark:border-slate-800 space-y-4">
             <h2 class="text-xl font-black text-center">Голосование раунда!</h2>
             <div id="voting-content-area" class="space-y-4">
+                <div class="space-y-1 bg-slate-50 dark:bg-slate-950 p-3 rounded-xl border dark:border-slate-800">
+                    <label class="block text-[9px] font-black uppercase tracking-wider text-slate-400">Архив улик (Все слова за матч):</label>
+                    <div id="voting-words-archive" class="text-[11px] font-medium space-y-1 max-h-24 overflow-y-auto text-slate-600 dark:text-slate-300">
+                        </div>
+                </div>
                 <div id="voting-players-list" class="space-y-2"></div>
                 <div id="spy-voting-guess-area" class="hidden border-t pt-3 border-slate-200 dark:border-slate-800 space-y-1.5">
                     <label class="block text-[10px] font-bold uppercase tracking-wider text-red-500 text-center">Шанс спастись! Назовите загаданное слово:</label>
@@ -594,6 +603,12 @@
             isHost = false;
             showLobby();
         });
+        socket.on('onlineTimerUpdate', (data) => {
+    const m = Math.floor(data.timeLeft / 60).toString().padStart(2, '0');
+    const s = (data.timeLeft % 60).toString().padStart(2, '0');
+    const display = document.getElementById('online-timer-display');
+    if (display) display.innerText = `${m}:${s}`;
+});
 
         function showLobby() {
             document.getElementById('setup-screen-online').classList.add('hidden');
@@ -732,7 +747,23 @@
             inp.value = "";
         }
 
-        socket.on('votingStarted', (data) => {
+       socket.on('votingStarted', (data) => {
+            // === НАЧАЛО ВСТАВКИ: ЗАПОЛНЕНИЕ АРХИВА ВСЕХ СЛОВ ДЛЯ ГОЛОСОВАНИЯ ===
+            const archiveBox = document.getElementById('voting-words-archive');
+            const chatMessages = document.getElementById('chat-messages').children;
+            if (archiveBox) {
+                archiveBox.innerHTML = "";
+                if (chatMessages.length === 0) {
+                    archiveBox.innerHTML = `<span class="text-slate-400 italic">Игроки не успели назвать слова в этом раунде</span>`;
+                } else {
+                    for (let msg of chatMessages) {
+                        archiveBox.innerHTML += `<div class="border-b dark:border-slate-900 pb-0.5">${msg.innerHTML}</div>`;
+                    }
+                }
+            }
+            // === КОНЕЦ ВСТАВКИ ===
+
+            // Твой оригинальный код экрана голосования
             document.getElementById('game-screen-online').classList.add('hidden');
             document.getElementById('round-alert-modal').classList.add('hidden');
             document.getElementById('voting-wait-msg').classList.add('hidden');
