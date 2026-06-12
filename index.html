@@ -448,15 +448,33 @@
         }
 
         function nextOfflinePlayerCard() {
-            offlineState.currentDistIdx++;
-            if (offlineState.currentDistIdx < offlineState.totalPlayers) {
-                updateOfflineDistributionCard();
-            } else {
-                document.getElementById('offline-distribution-screen').classList.add('hidden');
-                document.getElementById('offline-gameplay-screen').classList.remove('hidden');
-                resumeOfflineTimer();
-            }
+    // 1. Сначала принудительно закрываем карточку анимацией (поворачиваем рубашкой вверх)
+    const card = document.getElementById('offline-secret-card');
+    card.classList.remove('flipped');
+    offlineState.cardFlipped = false;
+
+    // 2. Блокируем кнопку сразу, чтобы её нельзя было спамить во время закрытия
+    const confirmBtn = document.getElementById('offline-card-confirm-btn');
+    confirmBtn.disabled = true;
+    confirmBtn.className = "w-full py-3.5 bg-slate-300 dark:bg-slate-800 text-slate-400 font-black rounded-xl text-xs uppercase opacity-50 cursor-not-allowed";
+    confirmBtn.innerText = "Сначала откройте карту";
+
+    // 3. Ждем 400 миллисекунд (пока карточка полностью перевернется и скроет текст)
+    setTimeout(() => {
+        // Переходим к следующему игроку в памяти
+        offlineState.currentDistIdx++;
+
+        // Если игроки еще остались — безопасно обновляем данные под "закрытой" рубашкой
+        if (offlineState.currentDistIdx < offlineState.totalPlayers) {
+            updateOfflineDistributionCard();
+        } else {
+            // Если все посмотрели роли — переходим к таймеру игры
+            document.getElementById('offline-distribution-screen').classList.add('hidden');
+            document.getElementById('offline-gameplay-screen').classList.remove('hidden');
+            resumeOfflineTimer();
         }
+    }, 400); // 400 мс — идеальное время, чтобы дождаться закрытия CSS-карты
+}
 
         function resumeOfflineTimer() {
             if (offlineState.timeLeft <= 0) {
