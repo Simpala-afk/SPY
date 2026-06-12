@@ -98,8 +98,13 @@
 
             <div class="decor-line h-[1px] w-full"></div>
 
-            <div class="space-y-5">
-                <button onclick="createLobby()" class="w-full py-4 bg-slate-900 dark:bg-white text-white dark:text-slate-950 font-black rounded-xl text-xs uppercase tracking-wider active:scale-95 transition shadow-md">👑 Создать новую комнату</button>
+            <div class="space-y-4">
+                <div class="space-y-1.5 p-3 bg-slate-50 dark:bg-slate-950/40 rounded-xl border border-slate-100 dark:border-slate-800/60">
+                    <label class="block text-[10px] font-bold uppercase tracking-wider text-slate-400">Свой код комнаты (необязательно):</label>
+                    <input id="online-custom-code" type="text" placeholder="5 БУКВ (НАПР. АБВГД)" maxlength="5" class="w-full px-3 py-2 text-center bg-slate-50 dark:bg-slate-950 border dark:border-slate-800 rounded-lg font-black text-xs uppercase tracking-widest focus:outline-none focus:border-indigo-500 transition">
+                </div>
+
+                <button onclick="createLobby()" class="w-full py-4 bg-slate-900 dark:bg-white text-white dark:text-slate-950 font-black rounded-xl text-xs uppercase tracking-wider active:scale-95 transition shadow-md">👑 Создать комнату</button>
                 
                 <div class="relative flex items-center justify-center py-2">
                     <span class="absolute px-4 bg-white dark:bg-slate-900 text-[10px] font-bold text-slate-400 uppercase tracking-widest z-10">или войти в существующую</span>
@@ -137,7 +142,7 @@
                     </div>
                 </div>
             </div>
-            <button id="offline-card-confirm-btn" onclick="nextOfflinePlayerCard()" disabled class="w-full py-3.5 bg-slate-300 dark:bg-slate-800 text-slate-400 font-black rounded-xl text-xs uppercase transition opacity-50 cursor-not-allowed">Сначала откройте карту</button>
+            <button id="offline-card-confirm-btn" onclick="nextOfflinePlayerCard()" disabled class="w-full py-3.5 bg-slate-300 dark:bg-slate-800 text-slate-400 font-black rounded-xl text-xs uppercase opacity-50 cursor-not-allowed">Сначала откройте карту</button>
         </div>
 
         <div id="offline-gameplay-screen" class="hidden w-full max-w-sm bg-white dark:bg-slate-900 p-6 rounded-2xl shadow-xl border border-slate-200 dark:border-slate-800 text-center space-y-6">
@@ -156,20 +161,17 @@
             </div>
         </div>
 
-        <div id="offline-voting-screen" class="hidden w-full max-w-md bg-white dark:bg-slate-900 p-6 rounded-2xl shadow-xl border border-slate-200 dark:border-slate-800 space-y-4">
+        <div id="offline-voting-screen" class="hidden w-full max-w-md bg-white dark:bg-slate-900 p-6 rounded-2xl shadow-xl border border-slate-200 dark:border-slate-800 space-y-5">
             <div class="text-center">
                 <h2 class="text-xl font-black uppercase">Голосование против Шпиона 🕵️‍♂️</h2>
                 <p class="text-xs text-slate-400 font-medium mt-1">Кликните по игроку, которого выбрало большинство</p>
             </div>
             <div id="offline-voting-list" class="space-y-2 max-h-60 overflow-y-auto"></div>
             <div class="decor-line h-[1px] w-full"></div>
-            <div class="space-y-2">
-                <label class="block text-[10px] font-bold uppercase tracking-wider text-red-500 text-center">Или шпион угадал слово? Проверка ответа:</label>
-                <div class="flex gap-2">
-                    <input id="offline-spy-guess-input" type="text" placeholder="Секретное слово..." class="flex-1 px-3 py-2 bg-red-500/5 border border-red-500/20 rounded-xl text-xs font-bold focus:outline-none">
-                    <button onclick="triggerOfflineSpyGuessSubmit()" class="px-4 bg-gradient-to-r from-red-500 to-orange-500 text-white font-black rounded-xl text-xs transition">Проверить</button>
-                </div>
-            </div>
+            
+            <button onclick="backToOfflineGameplay()" class="w-full py-3 border border-slate-200 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-950/60 font-black rounded-xl text-xs uppercase tracking-wider text-slate-500 hover:text-slate-700 dark:hover:text-white transition flex items-center justify-center gap-2 shadow-sm">
+                ⬅️ Назад к обсуждению (таймеру)
+            </button>
         </div>
 
         <div id="online-lobby-screen" class="hidden w-full max-w-sm bg-white dark:bg-slate-900 p-6 rounded-2xl shadow-xl border border-slate-200 dark:border-slate-800 space-y-4">
@@ -185,11 +187,17 @@
                 <div id="lobby-players-count" class="text-xs font-bold text-slate-400">Участников: 0</div>
                 <div id="lobby-players-list" class="max-h-40 overflow-y-auto space-y-1.5"></div>
             </div>
-            <div id="host-settings-block" class="hidden">
-                <button onclick="startGameOnline()" class="w-full py-3.5 bg-gradient-to-r from-emerald-500 to-teal-500 text-white font-black rounded-xl text-xs uppercase tracking-wider shadow-lg transition">🚀 Запустить игру</button>
-            </div>
-            <div id="player-waiting-block" class="hidden text-center py-3 bg-slate-50 dark:bg-slate-950 border dark:border-slate-800 rounded-xl animate-pulse">
-                <p class="text-xs font-bold text-slate-400">Ожидаем старта от создателя комнаты...</p>
+            
+            <div class="space-y-2">
+                <div id="host-settings-block" class="hidden">
+                    <button onclick="startGameOnline()" class="w-full py-3.5 bg-gradient-to-r from-emerald-500 to-teal-500 text-white font-black rounded-xl text-xs uppercase tracking-wider shadow-lg transition">🚀 Запустить игру</button>
+                </div>
+                <div id="player-waiting-block" class="hidden text-center py-3 bg-slate-50 dark:bg-slate-950 border dark:border-slate-800 rounded-xl animate-pulse mb-2">
+                    <p class="text-xs font-bold text-slate-400">Ожидаем старта от создателя комнаты...</p>
+                </div>
+                <button onclick="leaveLobbyOnline()" class="w-full py-2.5 border border-red-500/20 bg-red-500/5 hover:bg-red-500/10 text-red-500 font-black rounded-xl text-xs uppercase tracking-wider transition shadow-sm">
+                    🚪 Покинуть комнату
+                </button>
             </div>
         </div>
 
@@ -446,12 +454,14 @@
             } else {
                 document.getElementById('offline-distribution-screen').classList.add('hidden');
                 document.getElementById('offline-gameplay-screen').classList.remove('hidden');
-                startOfflineTimer();
+                resumeOfflineTimer();
             }
         }
 
-        function startOfflineTimer() {
-            offlineState.timeLeft = offlineState.gameTime * 60;
+        function resumeOfflineTimer() {
+            if (offlineState.timeLeft <= 0) {
+                offlineState.timeLeft = offlineState.gameTime * 60;
+            }
             updateOfflineTimerDisplay();
 
             offlineState.timerInterval = setInterval(() => {
@@ -487,6 +497,12 @@
             });
         }
 
+        function backToOfflineGameplay() {
+            document.getElementById('offline-voting-screen').classList.add('hidden');
+            document.getElementById('offline-gameplay-screen').classList.remove('hidden');
+            resumeOfflineTimer();
+        }
+
         function submitOfflineVote(playerId, isSpyStr) {
             const isSpy = (isSpyStr === 'true');
             document.getElementById('offline-voting-screen').classList.add('hidden');
@@ -505,35 +521,9 @@
             }
         }
 
-        function triggerOfflineSpyGuessSubmit() {
-            const guessInput = document.getElementById('offline-spy-guess-input');
-            const word = guessInput.value.trim();
-            if (!word) {
-                showAlert("Поле ответа не может быть пустым!", "⚠️");
-                return;
-            }
-
-            document.getElementById('offline-voting-screen').classList.add('hidden');
-            document.getElementById('result-screen').classList.remove('hidden');
-
-            document.getElementById('result-back-btn').onclick = quitOfflineGame;
-            document.getElementById('result-back-btn').innerText = "В меню ↩️";
-
-            const isCorrect = (offlineState.chosenWord.toLowerCase() === word.toLowerCase());
-            const box = document.getElementById('result-box');
-
-            if (isCorrect) {
-                box.className = "p-5 rounded-2xl border-2 border-red-500 bg-red-50 dark:bg-red-950/20";
-                box.innerHTML = `<h3 class="text-xl font-black text-red-600 mb-1">Шпион угадал слово! 🕵️‍♂️</h3><p class="text-xs text-slate-500">Правильный ответ: <b>${offlineState.chosenWord}</b>. База раскрыта.</p>`;
-            } else {
-                box.className = "p-5 rounded-2xl border-2 border-emerald-500 bg-emerald-50 dark:bg-emerald-950/20";
-                box.innerHTML = `<h3 class="text-xl font-black text-emerald-600 mb-1">Мирные победили! 🎉</h3><p class="text-xs text-slate-500">Шпион назвал неверное слово: "${word}". Загаданное слово: <b>${offlineState.chosenWord}</b></p>`;
-            }
-            guessInput.value = "";
-        }
-
         function quitOfflineGame() {
             if (offlineState.timerInterval) clearInterval(offlineState.timerInterval);
+            offlineState.timeLeft = 0; 
             document.getElementById('offline-gameplay-screen').classList.add('hidden');
             document.getElementById('offline-voting-screen').classList.add('hidden');
             document.getElementById('result-screen').classList.add('hidden');
@@ -545,8 +535,12 @@
         /* СЕТЕВОЙ ОНЛАЙН РЕЖИМ */
         function createLobby() {
             const nickname = document.getElementById('online-nickname').value.trim();
+            const customCode = document.getElementById('online-custom-code').value.trim().toUpperCase();
+            
             if (!nickname) return showAlert('Пожалуйста, укажите ваш никнейм!', "👤");
-            socket.emit('createRoom', { nickname: nickname });
+            if (customCode && customCode.length !== 5) return showAlert('Свой код должен состоять ровно из 5 букв!', "🔑");
+            
+            socket.emit('createRoom', { nickname: nickname, customCode: customCode });
         }
 
         function joinLobby() {
@@ -556,6 +550,18 @@
             if (code.length !== 5) return showAlert('Код сессии должен содержать ровно 5 букв!', "🔑");
             socket.emit('joinRoom', { roomCode: code, nickname: nickname });
         }
+
+        function leaveLobbyOnline() {
+            socket.emit('leaveRoom');
+        }
+
+        socket.on('leftRoomSuccess', () => {
+            roomCode = "";
+            myId = "";
+            isHost = false;
+            document.getElementById('online-lobby-screen').classList.add('hidden');
+            document.getElementById('setup-screen-online').classList.remove('hidden');
+        });
 
         socket.on('roomCreated', (data) => {
             roomCode = data.roomCode;
@@ -586,6 +592,26 @@
         }
 
         socket.on('roomPlayersUpdate', (data) => {
+            // Если текущего пользователя больше нет в списке (например, его кикнуло или комната закрылась)
+            const stillInRoom = data.players.some(p => p.id === myId);
+            if (!stillInRoom && roomCode !== "") {
+                roomCode = "";
+                myId = "";
+                isHost = false;
+                document.getElementById('online-lobby-screen').classList.add('hidden');
+                document.getElementById('setup-screen-online').classList.remove('hidden');
+                showAlert("Вы покинули комнату или она была закрыта хостом.", "🚪");
+                return;
+            }
+
+            // Переопределяем роль хоста локально, если старый хост вышел
+            const currentMe = data.players.find(p => p.id === myId);
+            if (currentMe && currentMe.isHost) {
+                isHost = true;
+                document.getElementById('host-settings-block').classList.remove('hidden');
+                document.getElementById('player-waiting-block').classList.add('hidden');
+            }
+
             document.getElementById('lobby-players-count').innerText = `Участников: ${data.players.length}`;
             const list = document.getElementById('lobby-players-list');
             list.innerHTML = "";
@@ -667,13 +693,13 @@
             const indicator = document.getElementById('chat-turn-indicator');
             const inp = document.getElementById('chat-input');
 
-            if (activePlayer.id === myId) {
+            if (activePlayer && activePlayer.id === myId) {
                 indicator.innerText = "ВАШ ХОД! Введите ассоциацию:";
                 indicator.className = "text-[11px] font-bold text-center py-1 bg-emerald-500/10 text-emerald-500 animate-pulse";
                 inp.disabled = false;
                 inp.placeholder = "Наберите слово...";
             } else {
-                indicator.innerText = `Ожидание хода: ${activePlayer.nickname}...`;
+                indicator.innerText = `Ожидание хода: ${activePlayer ? activePlayer.nickname : '...'}...`;
                 indicator.className = "text-[11px] font-bold text-center py-1 bg-slate-500/10 text-slate-400";
                 inp.disabled = true;
                 inp.placeholder = "Пожалуйста, ждите...";
