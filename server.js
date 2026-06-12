@@ -65,6 +65,9 @@ function startOnlineTimer(roomCode) {
     if (room.timerInterval) clearInterval(room.timerInterval);
     room.timeLeft = 300; // 5 минут на раунд
 
+    // ОТПРАВЛЯЕМ СРАЗУ: Чтобы клиент моментально сбросил таймер на 05:00 и он не зависал
+    io.to(roomCode).emit('onlineTimerUpdate', { timeLeft: room.timeLeft });
+
     room.timerInterval = setInterval(() => {
         if (!rooms[roomCode]) return; // Защита, если комнату удалили
         
@@ -339,4 +342,3 @@ io.on('connection', (socket) => {
 
 const PORT = process.env.PORT || 3000;
 server.listen(PORT, () => console.log(`Сервер успешно запущен на порту ${PORT}`));
-Сохраняй, закидывай бэкенд на GitHub/Render, и первая часть задачи полностью готова! Дальше останется только обновить интерфейс в index.html.
