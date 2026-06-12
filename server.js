@@ -62,11 +62,49 @@ function sendChatUpdate(roomCode) {
     });
 }
 
+// Вспомогательная функция для безопасного удаления игрока из комнаты
+function handlePlayerLeave(socketId) {
+    for (const roomCode in rooms) {
+        const room = rooms[roomCode];
+        const idx = room.players.findIndex(p => p.id === socketId);
+        if (idx !== -1) {
+            const wasHost = room.players[idx].isHost;
+            room.players.splice(idx, 1);
+            
+            if (room.players.length === 0) {
+                delete rooms[roomCode];
+            } else {
+                if (wasHost) {
+                    room.players[0].isHost = true;
+                }
+                io.to(roomCode).emit('roomPlayersUpdate', { players: room.players });
+            }
+            return roomCode;
+        }
+    }
+    return null;
+}
+
 io.on('connection', (socket) => {
     console.log(`Пользователь подключен: ${socket.id}`);
 
     socket.on('createRoom', (data) => {
-        const roomCode = generateRoomCode();
+        let roomCode = data.customCode ? data.customCode.trim().toUpperCase() : "";
+        
+        if (roomCode) {
+            if (roomCode.length !== 5) {
+                return socket.emit('errorMsg', 'Кастомный код должен состоять ровно из 5 букв!');
+            }
+            if (rooms[roomCode]) {
+                return socket.emit('errorMsg', 'Комната с таким кодом уже существует! Придумайте другой.');
+            }
+        } else {
+            roomCode = generateRoomCode();
+            while (rooms[roomCode]) {
+                roomCode = generateRoomCode();
+            }
+        }
+
         rooms[roomCode] = {
             status: 'lobby',
             players: [{ id: socket.id, nickname: data.nickname, isHost: true }],
@@ -95,6 +133,14 @@ io.on('connection', (socket) => {
         socket.join(roomCode);
         socket.emit('roomJoined', { roomCode: roomCode, playerId: socket.id });
         io.to(roomCode).emit('roomPlayersUpdate', { players: room.players });
+    });
+
+    socket.on('leaveRoom', () => {
+        const leftRoomCode = handlePlayerLeave(socket.id);
+        if (leftRoomCode) {
+            socket.leave(leftRoomCode);
+            socket.emit('leftRoomSuccess');
+        }
     });
 
     socket.on('startGame', (data) => {
@@ -177,7 +223,6 @@ io.on('connection', (socket) => {
                 }
             }
 
-            // ИСПРАВЛЕНО: Правильная очистка обычного массива через присвоение []
             if (isTie || kickedId === 'skip') {
                 room.round += 1;
                 room.step = 1;
@@ -236,24 +281,7 @@ io.on('connection', (socket) => {
 
     socket.on('disconnect', () => {
         console.log(`Пользователь отключился: ${socket.id}`);
-        for (const roomCode in rooms) {
-            const room = rooms[roomCode];
-            const idx = room.players.findIndex(p => p.id === socket.id);
-            if (idx !== -1) {
-                const wasHost = room.players[idx].isHost;
-                room.players.splice(idx, 1);
-                
-                if (room.players.length === 0) {
-                    delete rooms[roomCode];
-                } else {
-                    if (wasHost) {
-                        room.players[0].isHost = true;
-                    }
-                    io.to(roomCode).emit('roomPlayersUpdate', { players: room.players });
-                }
-                break;
-            }
-        }
+        handlePlayerLeave(socket.id);
     });
 });
 
